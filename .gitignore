@@ -1,0 +1,17 @@
+# Secrets and generated keys — never commit
+.env
+.env.*
+!.env.example
+keys/
+*.key
+
+# Generated artifacts
+reports/*.csv
+*.pdf
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS noise
+.DS_Store

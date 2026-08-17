@@ -1,0 +1,95 @@
+# OHack Fall 2026 AI Gateway — LiteLLM routing config
+#
+# Teams see three model names: ohack, ohack-frontier, ohack-free.
+# (ohack-mid exists as the fallback hop; teams can call it but we don't advertise it.)
+#
+# Pricing here is what budget math runs on — keep it matching the provider
+# price sheets (verified 2026-08-17, sources in DECISIONS.md). All costs are
+# USD per token (per-M price / 1,000,000).
+
+model_list:
+  # ── Lane 1 (default): Meta Muse Spark 1.2 Contributor — $0.10/$0.20 per M ──
+  # Contributor tier = Meta may train on prompts/completions (disclosed on the
+  # team docs page) and is capped at 60 requests/min — the fallback chain below
+  # absorbs event-scale bursts.
+  - model_name: ohack
+    litellm_params:
+      model: openai/muse-spark-1.2-contributor
+      api_base: https://api.meta.ai/v1
+      api_key: os.environ/META_MODEL_API_KEY
+    model_info:
+      input_cost_per_token: 1e-7    # $0.10 / M
+      output_cost_per_token: 2e-7   # $0.20 / M
+      cache_read_input_token_cost: 2e-9  # $0.002 / M cached input
+
+  # ── Lane 3 (mid fallback): Moonshot Kimi K2.7 Code — $0.95/$4 per M ──
+  - model_name: ohack-mid
+    litellm_params:
+      model: openai/kimi-k2.7-code
+      api_base: https://api.moonshot.ai/v1
+      api_key: os.environ/MOONSHOT_API_KEY
+    model_info:
+      input_cost_per_token: 9.5e-7  # $0.95 / M
+      output_cost_per_token: 4e-6   # $4 / M
+      cache_read_input_token_cost: 1.9e-7  # $0.19 / M cache hit
+
+  # ── Lane 2 (frontier, per-team $20 cap enforced on the key): Kimi K3 ──
+  # Deliberately NOT in any fallbacks list: when a team's frontier budget is
+  # exhausted this fails closed with a budget_exceeded error, per PLAN §Phase 2.
+  - model_name: ohack-frontier
+    litellm_params:
+      model: openai/kimi-k3
+      api_base: https://api.moonshot.ai/v1
+      api_key: os.environ/MOONSHOT_API_KEY
+    model_info:
+      input_cost_per_token: 3e-6    # $3 / M
+      output_cost_per_token: 1.5e-5 # $15 / M
+      cache_read_input_token_cost: 3e-7  # $0.30 / M cache hit
+
+  # ── Lane 4 (overflow): stacked free tiers ──
+  # Multiple entries under one model_name = load-balanced group.
+  # GATE (PLAN §5): before the event, verify each provider's ToS permits
+  # shared/pooled hackathon use; drop any that forbids it by deleting its block.
+  # Model IDs below MUST be re-verified against each provider's /v1/models
+  # during Phase 5 — free-tier catalogs churn.
+  - model_name: ohack-free
+    litellm_params:
+      model: openai/openai/gpt-oss-120b   # groq model id is "openai/gpt-oss-120b"
+      api_base: https://api.groq.com/openai/v1
+      api_key: os.environ/GROQ_API_KEY
+    model_info:
+      input_cost_per_token: 0
+      output_cost_per_token: 0
+  - model_name: ohack-free
+    litellm_params:
+      model: openai/zai-glm-4.7
+      api_base: https://api.cerebras.ai/v1
+      api_key: os.environ/CEREBRAS_API_KEY
+    model_info:
+      input_cost_per_token: 0
+      output_cost_per_token: 0
+  # NVIDIA NIM overflow — uncomment once key exists and ToS is verified:
+  # - model_name: ohack-free
+  #   litellm_params:
+  #     model: openai/<pick from https://integrate.api.nvidia.com/v1/models>
+  #     api_base: https://integrate.api.nvidia.com/v1
+  #     api_key: os.environ/NVIDIA_NIM_API_KEY
+  #   model_info:
+  #     input_cost_per_token: 0
+  #     output_cost_per_token: 0
+
+router_settings:
+  num_retries: 2
+  # Fallback fires after retries on 429/5xx. ohack-frontier intentionally absent.
+  fallbacks:
+    - ohack: ["ohack-mid", "ohack-free"]
+    - ohack-mid: ["ohack-free"]
+
+litellm_settings:
+  telemetry: false          # PLAN §Phase 2: local-first, no telemetry upload
+  drop_params: true         # heterogeneous coding tools send provider-specific params; drop, don't 400
+  # NO token compression / prompt rewriting anywhere (PLAN §Phase 2: correctness > cost)
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL

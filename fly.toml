@@ -1,0 +1,50 @@
+# OHack Fall 2026 AI Gateway — LiteLLM proxy (see PLAN.md, DECISIONS.md)
+#
+# Image is PINNED (PLAN.md §9: pin at Phase 1, never upgrade after Nov 1).
+# The -database variant bundles the Prisma toolchain LiteLLM needs for
+# Postgres-backed virtual keys and budgets.
+
+app = 'ohack-ai-gateway'
+primary_region = 'lax' # PLAN said phx, but Fly retired that region; lax is the closest
+kill_timeout = 30 # let the in-flight spend batch flush (~10s cadence) before stop
+
+[build]
+  image = 'ghcr.io/berriai/litellm-database:v1.97.0'
+
+# Args are appended to the image entrypoint (which execs `litellm`).
+[processes]
+  app = '--config /app/proxy_config.yaml --port 4000'
+
+# The routing config ships with the machine — no volume needed; all mutable
+# state (keys, spend) lives in Postgres (app: ohack-ai-gateway-db).
+[[files]]
+  guest_path = '/app/proxy_config.yaml'
+  local_path = 'config/litellm-config.yaml'
+
+[env]
+  LITELLM_MODE = 'PRODUCTION'
+  LITELLM_LOG = 'INFO'
+
+[http_service]
+  processes = ['app']
+  internal_port = 4000
+  force_https = true
+  auto_stop_machines = 'off' # event infra: keep it warm, cold starts kill demos
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '30s'
+    method = 'GET'
+    path = '/health/liveliness'
+
+[[vm]]
+  size = 'shared-cpu-2x'
+  memory = '2gb'
+
+# Event weekend (Nov 13-16): scale to 2 machines, then back down (see runbook.md):
+#   fly scale count 2 -a ohack-ai-gateway
+# Budgets enforce across replicas via shared Postgres, with up to ~10s of
+# spend-flush lag — provider-side spend ceilings are the true backstop (PLAN §3).
