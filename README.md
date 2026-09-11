@@ -24,7 +24,7 @@ Event-day operations: [runbook.md](runbook.md). Team-facing setup instructions
 ```
 fly.toml                  Fly.io app config (app: ohack-ai-gateway, region: phx)
 config/litellm-config.yaml  Providers, lanes, fallbacks, pricing — the whole routing brain
-scripts/provision_keys.py Create the 32 team/spare/mentor/admin keys with budgets
+scripts/provision_keys.py Create the 63 team/spare/mentor/admin keys (2 per team) with budgets
 scripts/check_spend.py    Live per-team spend table, warns at 80% of quota
 scripts/revoke_all.py     Teardown: revoke every key
 scripts/make_key_cards.py Print-ready PDF key cards from keys/keys.csv

@@ -1,7 +1,7 @@
 # Event runbook — OHack Fall 2026 AI Gateway
 
 Audience: any volunteer, no prior context needed. The gateway is a LiteLLM
-proxy on Fly.io (app `ohack-ai-gateway`, org `opportunity-hack`, region `phx`),
+proxy on Fly.io (app `ohack-ai-gateway`, org `opportunity-hack`, region `lax`),
 keys and spend live in Fly Postgres (app `ohack-ai-gateway-db`).
 
 You need: `flyctl` logged into the `opportunity-hack` org, Python 3.11+ with
@@ -17,7 +17,7 @@ export GW="https://ai.ohack.dev"
 1. **Gateway up?**
    ```bash
    curl -s $GW/health/liveliness        # expect: "I'm alive!"
-   curl -s $GW/health/readiness         # expect: JSON with "status":"connected"
+   curl -s $GW/health/readiness         # expect: JSON with "db":"connected"
    curl -s $GW/v1/models -H "Authorization: Bearer $MK" | python3 -m json.tool
    # expect: ohack, ohack-frontier, ohack-free, ohack-mid
    ```
@@ -96,38 +96,48 @@ fly scale count 1 -a ohack-ai-gateway   # Nov 16, teardown
 
 ## Teardown (Nov 16)
 
-1. `python scripts/revoke_all.py --base-url $GW --master-key $MK --yes`
-2. Export the final spend report before wiping anything:
+ORDER MATTERS: export the spend report FIRST — revoking hard-deletes the keys
+the report is built from.
+
+1. Export the final spend report:
    ```bash
+   mkdir -p reports
    python scripts/check_spend.py --base-url $GW --master-key $MK \
      > reports/fall-2026-spend.md
-   curl -s "$GW/global/spend/report?start_date=2026-11-13&end_date=2026-11-16" \
-     -H "Authorization: Bearer $MK" >> reports/fall-2026-spend.md
+   # raw per-request detail (JSON), for sponsors who want receipts:
+   curl -s "$GW/spend/logs?start_date=2026-11-13&end_date=2026-11-16" \
+     -H "Authorization: Bearer $MK" > reports/fall-2026-spend-logs.json
    ```
+   (Do NOT use `/global/spend/report` — it's enterprise-only and returns an error.)
+2. `python scripts/revoke_all.py --base-url $GW --master-key $MK --yes`
 3. `fly scale count 1 -a ohack-ai-gateway` (or `fly apps destroy` both apps if done for good).
 4. Remove/zero the spend limits and unused credit at Meta + Moonshot dashboards.
 5. If any sponsor granted credits: send them the usage numbers from step 2.
 6. Rotate `LITELLM_MASTER_KEY` (`fly secrets set LITELLM_MASTER_KEY=... -a ohack-ai-gateway`).
 
-## One-time setup still pending (Greg)
+## One-time setup still pending (Greg) — status as of 2026-09-10
 
-1. **DNS** — in Cloudflare, for `ai.ohack.dev`, **DNS-only (gray cloud, proxy
-   OFF — Cloudflare proxying breaks streaming)**, either:
+1. **DNS (not done)** — in Cloudflare, for `ai.ohack.dev`, **DNS-only (gray
+   cloud, proxy OFF — Cloudflare proxying breaks streaming)**, either:
    - `CNAME ai → ohack-ai-gateway.fly.dev`, or
    - `A ai → 66.241.125.248` and `AAAA ai → 2a09:8280:1::174:a9d5:0`
    Then `fly certs check ai.ohack.dev -a ohack-ai-gateway` until it says issued.
    Until DNS lands, everything works at `https://ohack-ai-gateway.fly.dev`.
-2. **Provider keys** — currently placeholders. When funded (PLAN §5, with
-   provider-side spend limits set FIRST):
+2. **Fund Moonshot** — the MOONSHOT_API_KEY secret is set (done 2026-08-17) but
+   the account is suspended for insufficient balance, so `ohack-mid` and
+   `ohack-frontier` fail. Recharge at platform.kimi.ai AND set the $600 hard
+   spend limit there first (PLAN §3). Meta is set, funded, and verified working.
+3. **Free-tier keys** — GROQ_API_KEY / CEREBRAS_API_KEY are still placeholders:
    ```bash
-   fly secrets set -a ohack-ai-gateway META_MODEL_API_KEY=... MOONSHOT_API_KEY=... \
-     GROQ_API_KEY=... CEREBRAS_API_KEY=...
+   fly secrets set -a ohack-ai-gateway GROQ_API_KEY=... CEREBRAS_API_KEY=...
    ```
-   (`fly secrets set` triggers a rolling restart automatically.) Then verify a
-   real completion per the morning checklist, and re-check the free-tier model
-   IDs in `config/litellm-config.yaml` against each provider's `/v1/models`.
-3. **Master key + UI login** are in `keys/gateway-admin.env` on the provisioning
-   laptop — move them into the organizer password vault.
+   (triggers a rolling restart automatically). Keys stay server-side only —
+   both providers' ToS forbid credential sharing/transfer.
+4. **Master key** — rotated on 2026-08-17 (releases v2–v6) after provisioning;
+   `keys/gateway-admin.env` on the provisioning laptop is STALE for the master
+   key (and possibly UI login). The current values are whatever was set in that
+   rotation — keep them in the organizer vault. Team keys in `keys/keys.csv`
+   are unaffected and verified working.
 
 ## Known gotchas
 

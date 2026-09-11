@@ -25,6 +25,8 @@ model to `ohack-frontier` — the frontier model only works with Key 2.
 export ANTHROPIC_BASE_URL="https://ai.ohack.dev"   # no /v1 — Claude Code adds it
 export ANTHROPIC_AUTH_TOKEN="sk-YOUR-KEY-1"
 export ANTHROPIC_MODEL="ohack"
+export ANTHROPIC_SMALL_FAST_MODEL="ohack"          # background calls too
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="ohack"       # (newer Claude Code versions)
 claude
 ```
 
@@ -37,7 +39,9 @@ Or put it in `~/.claude/settings.json` so it sticks:
   "env": {
     "ANTHROPIC_BASE_URL": "https://ai.ohack.dev",
     "ANTHROPIC_AUTH_TOKEN": "sk-YOUR-KEY-1",
-    "ANTHROPIC_MODEL": "ohack"
+    "ANTHROPIC_MODEL": "ohack",
+    "ANTHROPIC_SMALL_FAST_MODEL": "ohack",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ohack"
   }
 }
 ```

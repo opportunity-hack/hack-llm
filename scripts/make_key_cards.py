@@ -69,15 +69,15 @@ def draw_card(c, x, y, row):
     c.setFont("Courier", 9.5)
     c.drawString(pad + 0.75 * inch, CARD_H - pad - 38, ENDPOINT)
 
-    q_main = row.get("quota_main") or "15"
-    q_front = row.get("quota_frontier") or "20"
-    next_y = draw_key_block(
-        c, pad, CARD_H - pad - 62,
-        f"Key 1 — models ohack / ohack-free (${q_main} budget)", row["key"])
+    q_main = row.get("quota_main")
+    q_front = row.get("quota_frontier")
+    main_label = (f"Key 1 — models ohack / ohack-free (${q_main} budget)"
+                  if q_main else "Key — all models (uncapped, organizers)")
+    next_y = draw_key_block(c, pad, CARD_H - pad - 62, main_label, row["key"])
     if row.get("frontier_key"):
-        next_y = draw_key_block(
-            c, pad, next_y - 14,
-            f"Key 2 — model ohack-frontier (${q_front} budget)", row["frontier_key"])
+        f_label = (f"Key 2 — model ohack-frontier (${q_front} budget)"
+                   if q_front else "Key 2 — model ohack-frontier")
+        next_y = draw_key_block(c, pad, next_y - 14, f_label, row["frontier_key"])
 
     qr_size = 0.85 * inch
     c.drawImage(make_qr_image(DOCS_URL), pad, 0.55 * inch, qr_size, qr_size)

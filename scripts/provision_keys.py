@@ -105,15 +105,20 @@ def main() -> int:
         created[alias] = (r.json()["key"], budget)
         print(f"  {alias}: created ({created[alias][0][:10]}…)")
 
-    # Collapse into one CSV row per team: main key + frontier key.
+    # Collapse into one CSV row per team: main key + frontier key. Derive the
+    # row set from EVERY created alias so an orphaned frontier key (its base
+    # created on an earlier run) still gets written out instead of vanishing.
+    bases = {a.removesuffix("-frontier") for a in created}
     rows = []
-    for alias, (key, budget) in created.items():
-        if alias.endswith("-frontier"):
-            continue
-        f_alias = f"{alias}-frontier"
-        f_key, f_budget = created.get(f_alias, ("", None))
+    for base in sorted(bases):
+        key, budget = created.get(base, ("", None))
+        f_key, f_budget = created.get(f"{base}-frontier", ("", None))
+        if not key:
+            print(f"  NOTE: {base} existed already; new {base}-frontier key is on "
+                  f"this run's CSV row with an empty main-key column — merge by hand.",
+                  file=sys.stderr)
         rows.append({
-            "team_id": alias,
+            "team_id": base,
             "key": key,
             "frontier_key": f_key,
             "quota_main": "" if budget is None else f"{budget:g}",

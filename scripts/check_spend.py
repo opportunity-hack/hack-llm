@@ -59,15 +59,16 @@ def main() -> int:
         budget = k.get("max_budget")
         total_spend += spend
 
-        if budget:
-            frac = spend / float(budget)
+        if budget is not None:
+            frac = spend / float(budget) if float(budget) else float("inf")
             flag = ""
             if frac >= 1:
                 flag = "EXHAUSTED"
+                warned += 1
             elif frac >= args.warn_threshold:
                 flag = f"WARN >{args.warn_threshold:.0%}"
                 warned += 1
-            print(f"{alias:<20} {spend:>8.2f}$ {float(budget):>8.2f}$ {frac:>6.0%}  {flag}")
+            print(f"{alias:<20} {spend:>8.2f}$ {float(budget):>8.2f}$ {min(frac, 9.99):>6.0%}  {flag}")
         else:
             print(f"{alias:<20} {spend:>8.2f}$ {'∞':>9}")
 
@@ -75,7 +76,8 @@ def main() -> int:
     print(f"EVENT TOTAL: ${total_spend:.2f}   (PLAN §6: >$500 announce ohack-free; "
           f">$800 disable frontier — see runbook.md)")
     if warned:
-        print(f"{warned} key(s) past {args.warn_threshold:.0%} — consider a heads-up to those teams.")
+        print(f"{warned} key(s) at/past {args.warn_threshold:.0%} of budget "
+              f"(incl. exhausted) — consider a heads-up to those teams.")
     return 0
 
 

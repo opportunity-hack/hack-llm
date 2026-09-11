@@ -8,13 +8,15 @@
 # USD per token (per-M price / 1,000,000).
 
 model_list:
-  # ── Lane 1 (default): Meta Muse Spark 1.2 Contributor — $0.10/$0.20 per M ──
+  # ── Lane 1 (default): Meta Muse Spark 1.3 Contributor — $0.10/$0.20 per M ──
+  # (1.3 replaced 1.2 as the docs default 2026-09; same price, tuned for
+  # agentic/coding — audit 2026-09-10.)
   # Contributor tier = Meta may train on prompts/completions (disclosed on the
-  # team docs page) and is capped at 60 requests/min — the fallback chain below
+  # team docs page) and is capped at 100 requests/min — the fallback chain below
   # absorbs event-scale bursts.
   - model_name: ohack
     litellm_params:
-      model: openai/muse-spark-1.2-contributor
+      model: openai/muse-spark-1.3-contributor
       api_base: https://api.meta.ai/v1
       api_key: os.environ/META_MODEL_API_KEY
     model_info:
@@ -60,9 +62,12 @@ model_list:
     model_info:
       input_cost_per_token: 0
       output_cost_per_token: 0
+  # Cerebras: burst overflow only — free trial is $5/account and their ToS is
+  # the strictest on credential sharing; key stays server-side in this gateway.
+  # (zai-glm-4.7 was deprecated by Cerebras 2026-08-17 — audit 2026-09-10.)
   - model_name: ohack-free
     litellm_params:
-      model: openai/zai-glm-4.7
+      model: openai/gpt-oss-120b
       api_base: https://api.cerebras.ai/v1
       api_key: os.environ/CEREBRAS_API_KEY
     model_info:

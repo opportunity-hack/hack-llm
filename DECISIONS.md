@@ -85,6 +85,27 @@ ASU Tempe (~10 ms). Postgres and the app both live there.
 | 3 mid | Moonshot `kimi-k2.7-code` | `https://api.moonshot.ai/v1` | $0.95 in ($0.19 cache-hit) / $4 out |
 | 4 overflow | Groq / Cerebras / NVIDIA NIM free tiers | OpenAI-compatible | $0 — pending ToS check (PLAN §5) |
 
-Note: contributor tier is rate-limited to 60 requests/min (vs 3,000 standard) —
-the fallback chain to `kimi-k2.7-code` is what absorbs event-scale burst, exactly
-as the spec's Lane 3 intends.
+Note: contributor tier is rate-limited (100 RPM + 3M TPM as of Sep 2026; was 60
+RPM in Aug) — the fallback chain to `kimi-k2.7-code` is what absorbs event-scale
+burst, exactly as the spec's Lane 3 intends.
+
+## D3 — 2026-09-10 audit deltas
+
+Re-verified everything (live gateway + upstream releases + provider docs + an
+adversarial code review). D1/D1a/D2 all still stand: LiteLLM latest is v1.100.1
+but no CVE affects our pinned v1.97.0 (keep the pin, re-check advisories ~Nov 1);
+OmniRoute v3.8.50 still lacks lifetime per-key USD budgets. Changes applied:
+
+- Lane 1 model: `muse-spark-1.2-contributor` → `muse-spark-1.3-contributor`
+  (same price, agentic/coding-tuned, Meta's new docs default; verified live).
+- `ohack-free` Cerebras entry: `zai-glm-4.7` (deprecated by Cerebras 2026-08-17)
+  → `gpt-oss-120b`. Cerebras treated as burst overflow only (strict ToS, $5 trial).
+- Runbook teardown reordered: spend report export BEFORE key revocation
+  (revocation hard-deletes the rows the report reads), and `/global/spend/report`
+  replaced with `/spend/logs` (the former is enterprise-only).
+- Load-test pass gate now judges TTFT ≤5s p95 (total ≤30s) — a 256-token
+  streaming completion legitimately takes 5–9s end-to-end.
+- Ops fact: LITELLM_MASTER_KEY was rotated Aug 17 after provisioning (Fly
+  releases v2–v6); `keys/gateway-admin.env` is stale for admin creds. Team keys
+  unaffected. Meta key live+funded; Moonshot key set but account unfunded;
+  Groq/Cerebras still placeholders.
