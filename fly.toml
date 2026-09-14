@@ -21,6 +21,13 @@ kill_timeout = 30 # let the in-flight spend batch flush (~10s cadence) before st
   guest_path = '/app/proxy_config.yaml'
   local_path = 'config/litellm-config.yaml'
 
+# Team setup guide, served by LiteLLM's own static mount at /ui/guide.
+# The guest path is inside the pinned v1.97.0 image's dashboard export —
+# re-verify it (python3.13, .venv layout) if the image pin ever changes.
+[[files]]
+  guest_path = '/app/.venv/lib/python3.13/site-packages/litellm/proxy/_experimental/out/guide/index.html'
+  local_path = 'web/guide/index.html'
+
 [env]
   LITELLM_MODE = 'PRODUCTION'
   LITELLM_LOG = 'INFO'

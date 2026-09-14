@@ -17,7 +17,9 @@ enterprise-only in LiteLLM OSS — the dual-key pattern PLAN §Phase 3 pre-appro
 
 Full spec: [PLAN.md](PLAN.md). Why LiteLLM and not OmniRoute: [DECISIONS.md](DECISIONS.md).
 Event-day operations: [runbook.md](runbook.md). Team-facing setup instructions
-(source for the ohack.dev docs page): [docs/team-setup.md](docs/team-setup.md).
+(source for the ohack.dev docs page): [docs/team-setup.md](docs/team-setup.md) —
+also served by the gateway itself at **`https://ai.ohack.dev/ui/guide`**
+(page lives in `web/guide/index.html`, shipped via `fly.toml [[files]]`).
 
 ## Layout
 

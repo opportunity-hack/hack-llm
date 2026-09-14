@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OHack AI Gateway — Setup Guide</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔌</text></svg>">
+</head>
+<body>
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #eceff3;
+    --ink: #1a2530;
+    --muted: #5a6b7b;
+    --line: #d9dfe6;
+    --accent: #0f6bb2;
+    --accent-ink: #ffffff;
+    --code-bg: #101820;
+    --code-ink: #dce6ef;
+    --code-line: #223140;
+    --lane-default: #0f6bb2;
+    --lane-default-bg: #e3eef7;
+    --lane-frontier: #9a5b0b;
+    --lane-frontier-bg: #f7edda;
+    --lane-free: #1a7f4b;
+    --lane-free-bg: #e0f2e8;
+    --warn-bg: #f7edda;
+    --warn-line: #e0c184;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f151b;
+      --surface: #171f27;
+      --surface-2: #1e2933;
+      --ink: #e8edf2;
+      --muted: #93a3b2;
+      --line: #2b3844;
+      --accent: #5ba8e0;
+      --accent-ink: #0f151b;
+      --code-bg: #0b1117;
+      --code-ink: #d5e0ea;
+      --code-line: #1f2c38;
+      --lane-default: #6fb4e8;
+      --lane-default-bg: #17293a;
+      --lane-frontier: #e0a458;
+      --lane-frontier-bg: #33270f;
+      --lane-free: #56c288;
+      --lane-free-bg: #12301f;
+      --warn-bg: #2e2410;
+      --warn-line: #6b5320;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f151b;
+    --surface: #171f27;
+    --surface-2: #1e2933;
+    --ink: #e8edf2;
+    --muted: #93a3b2;
+    --line: #2b3844;
+    --accent: #5ba8e0;
+    --accent-ink: #0f151b;
+    --code-bg: #0b1117;
+    --code-ink: #d5e0ea;
+    --code-line: #1f2c38;
+    --lane-default: #6fb4e8;
+    --lane-default-bg: #17293a;
+    --lane-frontier: #e0a458;
+    --lane-frontier-bg: #33270f;
+    --lane-free: #56c288;
+    --lane-free-bg: #12301f;
+    --warn-bg: #2e2410;
+    --warn-line: #6b5320;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Avenir Next", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.55;
+    margin: 0;
+    padding: 0 1rem 4rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  main { max-width: 42rem; margin: 0 auto; }
+
+  header { padding: 2.2rem 0 0.4rem; }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 0.4rem;
+  }
+  h1 {
+    font-size: clamp(1.7rem, 6vw, 2.3rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin: 0 0 0.35rem;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); margin: 0; font-size: 1rem; }
+
+  h2 {
+    font-size: 1.22rem;
+    font-weight: 750;
+    letter-spacing: -0.01em;
+    margin: 2.4rem 0 0.7rem;
+    text-wrap: balance;
+  }
+  h2 .tool-tag {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+  }
+  p { margin: 0.6rem 0; }
+  a { color: var(--accent); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin: 1.2rem 0;
+  }
+  .fact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.7rem;
+    align-items: baseline;
+    padding: 0.45rem 0;
+  }
+  .fact-row + .fact-row { border-top: 1px solid var(--line); }
+  .fact-label {
+    flex: 0 0 6.2rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .fact-value { font-weight: 600; }
+  code, .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    font-size: 0.92em;
+  }
+  p code, li code, td code, .fact-value code {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 0.08em 0.35em;
+  }
+
+  .lane {
+    display: inline-block;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.1em 0.55em;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .lane-default { color: var(--lane-default); background: var(--lane-default-bg); }
+  .lane-frontier { color: var(--lane-frontier); background: var(--lane-frontier-bg); }
+  .lane-free { color: var(--lane-free); background: var(--lane-free-bg); }
+  .keychip {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.12em 0.5em;
+    border-radius: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  nav.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 1.4rem 0 0.4rem;
+  }
+  nav.chips a {
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.32em 0.85em;
+  }
+  nav.chips a:hover { border-color: var(--accent); color: var(--accent); }
+
+  .codewrap {
+    position: relative;
+    margin: 0.8rem 0;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border: 1px solid var(--code-line);
+    border-radius: 10px;
+    padding: 0.95rem 1rem;
+    margin: 0;
+    overflow-x: auto;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    font-size: 0.83rem;
+    line-height: 1.55;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--code-ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--code-line);
+    border-radius: 6px;
+    padding: 0.25em 0.7em;
+    cursor: pointer;
+  }
+  .copy-btn:hover, .copy-btn:focus-visible { border-color: var(--accent); outline: none; }
+  .copy-btn.copied { color: var(--lane-free); border-color: var(--lane-free); }
+
+  ol.steps { padding-left: 1.3rem; margin: 0.6rem 0; }
+  ol.steps li { margin: 0.35rem 0; }
+
+  .notice {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-line);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin: 1.2rem 0;
+    font-size: 0.95rem;
+  }
+  .notice strong { display: block; margin-bottom: 0.25rem; }
+
+  .tablewrap { overflow-x: auto; margin: 0.8rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted);
+  }
+  td:first-child { white-space: nowrap; }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .copy-btn { transition: border-color 120ms ease, color 120ms ease; }
+  }
+</style>
+
+<main>
+  <header>
+    <p class="eyebrow">Opportunity Hack · Fall 2026 · Nov 14–15</p>
+    <h1>One AI gateway, every coding tool</h1>
+    <p class="sub">Point Claude Code, Cursor, Cline, Continue, or any OpenAI/Anthropic SDK
+    at the OHack endpoint with the keys on your team card. Setup takes about two minutes.</p>
+  </header>
+
+  <div class="card">
+    <div class="fact-row">
+      <span class="fact-label">Endpoint</span>
+      <span class="fact-value"><code>https://ai.ohack.dev/v1</code></span>
+    </div>
+    <div class="fact-row">
+      <span class="fact-label"><span class="keychip">Key 1</span></span>
+      <span class="fact-value">$15 budget · models <span class="lane lane-default">ohack</span> <span class="lane lane-free">ohack-free</span></span>
+    </div>
+    <div class="fact-row">
+      <span class="fact-label"><span class="keychip">Key 2</span></span>
+      <span class="fact-value">$20 budget · model <span class="lane lane-frontier">ohack-frontier</span></span>
+    </div>
+    <div class="fact-row">
+      <span class="fact-label">Models</span>
+      <span class="fact-value" style="font-weight: 400;">
+        <span class="lane lane-default">ohack</span> fast + cheap default, auto-falls-back if a provider is down ·
+        <span class="lane lane-frontier">ohack-frontier</span> the big gun — save it for hard problems ·
+        <span class="lane lane-free">ohack-free</span> rate-limited but costs nothing
+      </span>
+    </div>
+  </div>
+
+  <p>That's <strong>$35 per team total</strong>. When a budget runs out, requests return a clear
+  <code>budget_exceeded</code> error — find an organizer. Examples below use Key&nbsp;1;
+  to use <span class="lane lane-frontier">ohack-frontier</span>, swap in Key&nbsp;2 <em>and</em> set the
+  model name to <code>ohack-frontier</code>.</p>
+
+  <nav class="chips" aria-label="Jump to your tool">
+    <a href="#claude-code">Claude Code</a>
+    <a href="#cursor">Cursor</a>
+    <a href="#cline">Cline</a>
+    <a href="#continue">Continue</a>
+    <a href="#python">Python</a>
+    <a href="#node">Node</a>
+    <a href="#curl">curl</a>
+  </nav>
+
+  <h2 id="claude-code"><span class="tool-tag">Command line</span>Claude Code</h2>
+  <p>Export these before launching <code>claude</code> (note: base URL has <strong>no</strong> <code>/v1</code> — Claude Code adds it):</p>
+  <div class="codewrap">
+<pre>export ANTHROPIC_BASE_URL="https://ai.ohack.dev"
+export ANTHROPIC_AUTH_TOKEN="sk-YOUR-KEY-1"
+export ANTHROPIC_MODEL="ohack"
+export ANTHROPIC_SMALL_FAST_MODEL="ohack"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="ohack"
+claude</pre>
+    <button class="copy-btn" type="button">Copy</button>
+  </div>
+  <p>Or make it stick in <code>~/.claude/settings.json</code>:</p>
+  <div class="codewrap">
+<pre>{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://ai.ohack.dev",
+    "ANTHROPIC_AUTH_TOKEN": "sk-YOUR-KEY-1",
+    "ANTHROPIC_MODEL": "ohack",
+    "ANTHROPIC_SMALL_FAST_MODEL": "ohack",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ohack"
+  }
+}</pre>
+    <button class="copy-btn" type="button">Copy</button>
+  </div>
+  <p>Frontier session instead: open a separate terminal and set all five vars for Key&nbsp;2 —
+  <code>ANTHROPIC_AUTH_TOKEN</code> to Key&nbsp;2, and all three model vars to
+  <code>ohack-frontier</code> (Key&nbsp;2 only allows that model).</p>
+
+  <h2 id="cursor"><span class="tool-tag">Editor</span>Cursor</h2>
+  <ol class="steps">
+    <li>Settings → Models → API Keys → <strong>OpenAI API Key</strong>: paste Key&nbsp;1.</li>
+    <li>Enable <strong>Override OpenAI Base URL</strong> and set it to <code>https://ai.ohack.dev/v1</code>.</li>
+    <li>Add a custom model named <code>ohack</code>. (For <code>ohack-frontier</code>, switch the API key to Key&nbsp;2 and add that model name.)</li>
+  </ol>
+
+  <h2 id="cline"><span class="tool-tag">VS Code</span>Cline</h2>
+  <ol class="steps">
+    <li>Cline settings → API Provider → <strong>OpenAI Compatible</strong>.</li>
+    <li>Base URL: <code>https://ai.ohack.dev/v1</code></li>
+    <li>API Key: Key&nbsp;1</li>
+    <li>Model ID: <code>ohack</code></li>
+  </ol>
+
+  <h2 id="continue"><span class="tool-tag">VS Code</span>Continue</h2>
+  <p>Add to <code>~/.continue/config.yaml</code>:</p>
+  <div class="codewrap">
+<pre>models:
+  - name: ohack
+    provider: openai
+    model: ohack
+    apiBase: https://ai.ohack.dev/v1
+    apiKey: sk-YOUR-KEY-1</pre>
+    <button class="copy-btn" type="button">Copy</button>
+  </div>
+
+  <h2 id="python"><span class="tool-tag">SDK</span>Python (OpenAI SDK)</h2>
+  <div class="codewrap">
+<pre>from openai import OpenAI
+
+client = OpenAI(base_url="https://ai.ohack.dev/v1", api_key="sk-YOUR-KEY-1")
+r = client.chat.completions.create(
+    model="ohack",
+    messages=[{"role": "user", "content": "Hello from OHack!"}],
+)
+print(r.choices[0].message.content)</pre>
+    <button class="copy-btn" type="button">Copy</button>
+  </div>
+
+  <h2 id="node"><span class="tool-tag">SDK</span>Node (OpenAI SDK)</h2>
+  <div class="codewrap">
+<pre>import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://ai.ohack.dev/v1",
+  apiKey: "sk-YOUR-KEY-1",
+});
+const r = await client.chat.completions.create({
+  model: "ohack",
+  messages: [{ role: "user", content: "Hello from OHack!" }],
+});
+console.log(r.choices[0].message.content);</pre>
+    <button class="copy-btn" type="button">Copy</button>
+  </div>
+
+  <h2 id="curl"><span class="tool-tag">Command line</span>curl (smoke test)</h2>
+  <p>One line on purpose — multi-line commands with <code>\</code> break when pasted into
+  PowerShell or some terminals. Windows: use <code>curl.exe</code> and escape the inner
+  quotes as <code>\"</code>.</p>
+  <div class="codewrap">
+<pre>curl -s https://ai.ohack.dev/v1/chat/completions -H "Authorization: Bearer sk-YOUR-KEY-1" -H "Content-Type: application/json" -d '{"model":"ohack","messages":[{"role":"user","content":"say ok"}]}'</pre>
+    <button class="copy-btn" type="button">Copy</button>
+  </div>
+
+  <div class="notice">
+    <strong>Where your prompts go</strong>
+    The default <code>ohack</code> model uses Meta's Contributor tier. Your prompts and
+    generated code may be used by Meta to train its models. All OHack projects are open
+    source, so this matches how your code will be published anyway. If your team objects,
+    use <code>ohack-free</code>.
+  </div>
+
+  <h2>Troubleshooting</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Symptom</th><th>Meaning</th><th>Fix</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>401</code></td>
+          <td>Bad or missing key</td>
+          <td>Re-copy the key from your card; check for stray spaces</td>
+        </tr>
+        <tr>
+          <td><code>429</code> + <code>budget_exceeded</code></td>
+          <td>That key's budget is spent</td>
+          <td>Find an organizer</td>
+        </tr>
+        <tr>
+          <td>"model not allowed"</td>
+          <td>Wrong key for the model</td>
+          <td><code>ohack-frontier</code> needs Key&nbsp;2; everything else needs Key&nbsp;1</td>
+        </tr>
+        <tr>
+          <td>Slow responses</td>
+          <td>Default lane is saturated</td>
+          <td>Switch to <code>ohack-free</code>, or take a walk — it's a hackathon</td>
+        </tr>
+        <tr>
+          <td>Tool insists on a <code>claude-*</code> model</td>
+          <td>Some tools filter model pickers</td>
+          <td>Type the model name <code>ohack</code> manually (env var or custom model entry)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <p>Keys are shared by your whole team. Don't commit them, don't post them, don't paste
+    them into public demos — leaked keys get revoked and you'll need a spare from an organizer.</p>
+    <p>Built for the Opportunity Hack Fall 2026 hackathon · ohack.dev</p>
+  </footer>
+</main>
+
+<script>
+  document.querySelectorAll(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const pre = btn.parentElement.querySelector("pre");
+      try {
+        await navigator.clipboard.writeText(pre.textContent);
+        btn.textContent = "Copied";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy";
+          btn.classList.remove("copied");
+        }, 1600);
+      } catch {
+        btn.textContent = "Select + copy";
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

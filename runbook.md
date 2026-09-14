@@ -151,3 +151,5 @@ the report is built from.
   not an incident.
 - The LiteLLM admin UI is at `https://ai.ohack.dev/ui` (login = `UI_USERNAME` /
   `UI_PASSWORD` Fly secrets). Handy for eyeballing keys and spend graphs.
+- The team setup guide is served at `https://ai.ohack.dev/ui/guide` (no login —
+  it holds no secrets). To change it: edit `web/guide/index.html`, `fly deploy`.
