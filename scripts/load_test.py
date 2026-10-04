@@ -108,7 +108,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--base-url", default="https://ai.ohack.dev/v1")
     ap.add_argument("--api-key", default="")
-    ap.add_argument("--model", default="ohack")
+    ap.add_argument("--model", default="muse-spark")
     ap.add_argument("--sessions", type=int, default=25)
     ap.add_argument("--minutes", type=float, default=10)
     ap.add_argument("--cache-fraction", type=float, default=0.6,

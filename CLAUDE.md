@@ -11,7 +11,7 @@ budget design; runbook.md is event ops.
 - LiteLLM: stable v1.104.0; **GHSA-7hp6 (Critical, 2026-09-30, salt-reuse priv-esc)
   affects pinned v1.97.0 — fix in 1.100.4**. Upgrade before Nov 1 freeze.
 - Team guide (`web/guide/index.html`) + key cards now label underlying models
-  (ohack=Muse Spark 1.3, frontier=Kimi K3, free=GPT-OSS pool); redeploy to ship.
+  (muse-spark=Muse Spark 1.3, kimi-k3=Kimi K3, gpt-oss-120b=GPT-OSS pool); redeploy to ship.
 
 ## State (2026-08-17)
 

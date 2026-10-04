@@ -73,7 +73,7 @@ def main() -> int:
             print(f"{alias:<20} {spend:>8.2f}$ {'∞':>9}")
 
     print("-" * 66)
-    print(f"EVENT TOTAL: ${total_spend:.2f}   (PLAN §6: >$500 announce ohack-free; "
+    print(f"EVENT TOTAL: ${total_spend:.2f}   (PLAN §6: >$500 announce gpt-oss-120b; "
           f">$800 disable frontier — see runbook.md)")
     if warned:
         print(f"{warned} key(s) at/past {args.warn_threshold:.0%} of budget "

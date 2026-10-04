@@ -292,27 +292,60 @@
     </div>
     <div class="fact-row">
       <span class="fact-label"><span class="keychip">Key 1</span></span>
-      <span class="fact-value">$15 budget · <span class="lane lane-default">ohack</span> (Muse Spark 1.3) <span class="lane lane-free">ohack-free</span> (GPT-OSS pool)</span>
+      <span class="fact-value">$15 budget · <span class="lane lane-default">muse-spark</span> (Muse Spark 1.3) <span class="lane lane-free">gpt-oss-120b</span> (GPT-OSS pool)</span>
     </div>
     <div class="fact-row">
       <span class="fact-label"><span class="keychip">Key 2</span></span>
-      <span class="fact-value">$20 budget · <span class="lane lane-frontier">ohack-frontier</span> (Kimi K3)</span>
-    </div>
-    <div class="fact-row">
-      <span class="fact-label">Models</span>
-      <span class="fact-value" style="font-weight: 400;">
-        <span class="lane lane-default">ohack</span> = Muse Spark 1.3 (Meta), fast + cheap default, auto-falls-back if down ·
-        <span class="lane lane-frontier">ohack-frontier</span> = Kimi K3, the big gun — save it for hard problems ·
-        <span class="lane lane-free">ohack-free</span> = GPT-OSS 120B free pool, rate-limited but $0 ·
-        <code>ohack-mid</code> = Kimi K2.7 Code (Key&nbsp;1 manual fallback)
-      </span>
+      <span class="fact-value">$20 budget · <span class="lane lane-frontier">kimi-k3</span> (Kimi K3)</span>
     </div>
   </div>
 
+  <h2>Models</h2>
+  <p>One key works with every model on its lane — switching models is just changing the
+  model name, no new key needed. (The old names <code>ohack</code>, <code>ohack-mid</code>,
+  <code>ohack-frontier</code>, <code>ohack-free</code> still work too.)</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Model name (use this)</th><th>What it is</th><th>Price / 1M tokens</th><th>Key</th><th>Best for</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>muse-spark</code></td>
+          <td>Muse Spark 1.3 (Meta)</td>
+          <td>$0.10 in / $0.20 out</td>
+          <td>Key 1</td>
+          <td>Fast + cheap default — auto-falls-back to kimi-k2.7-code, then gpt-oss-120b if a provider is down</td>
+        </tr>
+        <tr>
+          <td><code>gpt-oss-120b</code></td>
+          <td>GPT-OSS 120B (Groq + Cerebras)</td>
+          <td>Free</td>
+          <td>Key 1</td>
+          <td>Costs nothing; free-tier limits apply</td>
+        </tr>
+        <tr>
+          <td><code>kimi-k2.7-code</code></td>
+          <td>Kimi K2.7 Code (Moonshot)</td>
+          <td>$0.95 in / $4.00 out</td>
+          <td>Key 1</td>
+          <td>Stronger coding help; also the automatic fallback when muse-spark is down</td>
+        </tr>
+        <tr>
+          <td><code>kimi-k3</code></td>
+          <td>Kimi K3 (Moonshot)</td>
+          <td>$3.00 in / $15.00 out</td>
+          <td>Key 2</td>
+          <td>The big gun — save it for hard problems</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <p>That's <strong>$35 per team total</strong>. When a budget runs out, requests return a clear
-  <code>budget_exceeded</code> error — find an organizer. Examples below use Key&nbsp;1;
-  to use <span class="lane lane-frontier">ohack-frontier</span>, swap in Key&nbsp;2 <em>and</em> set the
-  model name to <code>ohack-frontier</code>.</p>
+  <code>budget_exceeded</code> error — find an organizer. Examples below use Key&nbsp;1 with
+  <code>muse-spark</code>; to use <span class="lane lane-frontier">kimi-k3</span>, swap in Key&nbsp;2
+  <em>and</em> set the model name to <code>kimi-k3</code>.</p>
 
   <nav class="chips" aria-label="Jump to your tool">
     <a href="#claude-code">Claude Code</a>
@@ -325,13 +358,14 @@
   </nav>
 
   <h2 id="claude-code"><span class="tool-tag">Command line</span>Claude Code</h2>
-  <p>Export these before launching <code>claude</code> (note: base URL has <strong>no</strong> <code>/v1</code> — Claude Code adds it):</p>
+  <p>Export these before launching <code>claude</code> (note: base URL has <strong>no</strong> <code>/v1</code> — Claude Code adds it).
+  Swap the model value to <code>gpt-oss-120b</code> to switch models with the same key:</p>
   <div class="codewrap">
 <pre>export ANTHROPIC_BASE_URL="https://ai.ohack.dev"
-export ANTHROPIC_AUTH_TOKEN="sk-YOUR-KEY-1"
-export ANTHROPIC_MODEL="ohack"
-export ANTHROPIC_SMALL_FAST_MODEL="ohack"
-export ANTHROPIC_DEFAULT_HAIKU_MODEL="ohack"
+export ANTHROPIC_AUTH_TOKEN=<redacted>
+export ANTHROPIC_MODEL="muse-spark"
+export ANTHROPIC_SMALL_FAST_MODEL="muse-spark"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="muse-spark"
 claude</pre>
     <button class="copy-btn" type="button">Copy</button>
   </div>
@@ -341,39 +375,38 @@ claude</pre>
   "env": {
     "ANTHROPIC_BASE_URL": "https://ai.ohack.dev",
     "ANTHROPIC_AUTH_TOKEN": "sk-YOUR-KEY-1",
-    "ANTHROPIC_MODEL": "ohack",
-    "ANTHROPIC_SMALL_FAST_MODEL": "ohack",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ohack"
+    "ANTHROPIC_MODEL": "muse-spark",
+    "ANTHROPIC_SMALL_FAST_MODEL": "muse-spark",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "muse-spark"
   }
 }</pre>
     <button class="copy-btn" type="button">Copy</button>
   </div>
-  <p>Frontier session instead: open a separate terminal and set all five vars for Key&nbsp;2 —
-  <code>ANTHROPIC_AUTH_TOKEN</code> to Key&nbsp;2, and all three model vars to
-  <code>ohack-frontier</code> (Key&nbsp;2 only allows that model).</p>
+  <p>Frontier session instead: open a separate terminal and set all five vars for Key 2 — <code>ANTHROPIC_AUTH_TOKEN</code> to Key 2, and all three model vars to
+  <code>kimi-k3</code> (Key 2 only allows that model).</p>
 
   <h2 id="cursor"><span class="tool-tag">Editor</span>Cursor</h2>
-  <ol class="steps">
-    <li>Settings → Models → API Keys → <strong>OpenAI API Key</strong>: paste Key&nbsp;1.</li>
+  <ol>
+    <li>Settings → Models → API Keys → <strong>OpenAI API Key</strong>: paste Key 1.</li>
     <li>Enable <strong>Override OpenAI Base URL</strong> and set it to <code>https://ai.ohack.dev/v1</code>.</li>
-    <li>Add a custom model named <code>ohack</code>. (For <code>ohack-frontier</code>, switch the API key to Key&nbsp;2 and add that model name.)</li>
+    <li>Add a custom model named <code>muse-spark</code>. (For <code>kimi-k3</code>, switch the API key to Key 2 and add that model name.)</li>
   </ol>
 
   <h2 id="cline"><span class="tool-tag">VS Code</span>Cline</h2>
-  <ol class="steps">
+  <ol>
     <li>Cline settings → API Provider → <strong>OpenAI Compatible</strong>.</li>
     <li>Base URL: <code>https://ai.ohack.dev/v1</code></li>
-    <li>API Key: Key&nbsp;1</li>
-    <li>Model ID: <code>ohack</code></li>
+    <li>API Key: Key 1</li>
+    <li>Model ID: <code>muse-spark</code></li>
   </ol>
 
   <h2 id="continue"><span class="tool-tag">VS Code</span>Continue</h2>
   <p>Add to <code>~/.continue/config.yaml</code>:</p>
   <div class="codewrap">
 <pre>models:
-  - name: ohack
+  - name: muse-spark
     provider: openai
-    model: ohack
+    model: muse-spark
     apiBase: https://ai.ohack.dev/v1
     apiKey: sk-YOUR-KEY-1</pre>
     <button class="copy-btn" type="button">Copy</button>
@@ -385,7 +418,7 @@ claude</pre>
 
 client = OpenAI(base_url="https://ai.ohack.dev/v1", api_key="sk-YOUR-KEY-1")
 r = client.chat.completions.create(
-    model="ohack",
+    model="muse-spark",
     messages=[{"role": "user", "content": "Hello from OHack!"}],
 )
 print(r.choices[0].message.content)</pre>
@@ -400,10 +433,12 @@ const client = new OpenAI({
   baseURL: "https://ai.ohack.dev/v1",
   apiKey: "sk-YOUR-KEY-1",
 });
+
 const r = await client.chat.completions.create({
-  model: "ohack",
+  model: "muse-spark",
   messages: [{ role: "user", content: "Hello from OHack!" }],
 });
+
 console.log(r.choices[0].message.content);</pre>
     <button class="copy-btn" type="button">Copy</button>
   </div>
@@ -413,16 +448,16 @@ console.log(r.choices[0].message.content);</pre>
   PowerShell or some terminals. Windows: use <code>curl.exe</code> and escape the inner
   quotes as <code>\"</code>.</p>
   <div class="codewrap">
-<pre>curl -s https://ai.ohack.dev/v1/chat/completions -H "Authorization: Bearer sk-YOUR-KEY-1" -H "Content-Type: application/json" -d '{"model":"ohack","messages":[{"role":"user","content":"say ok"}]}'</pre>
+<pre>curl -s https://ai.ohack.dev/v1/chat/completions -H "Authorization: Bearer <redacted>" -H "Content-Type: application/json" -d '{"model":"muse-spark","messages":[{"role":"user","content":"say ok"}]}'</pre>
     <button class="copy-btn" type="button">Copy</button>
   </div>
 
   <div class="notice">
     <strong>Where your prompts go</strong>
-    The default <code>ohack</code> model uses Meta's Contributor tier. Your prompts and
+    The default <code>muse-spark</code> model uses Meta's Contributor tier. Your prompts and
     generated code may be used by Meta to train its models. All OHack projects are open
     source, so this matches how your code will be published anyway. If your team objects,
-    use <code>ohack-free</code>.
+    use <code>gpt-oss-120b</code>.
   </div>
 
   <h2>Troubleshooting</h2>
@@ -445,17 +480,17 @@ console.log(r.choices[0].message.content);</pre>
         <tr>
           <td>"model not allowed"</td>
           <td>Wrong key for the model</td>
-          <td><code>ohack-frontier</code> needs Key&nbsp;2; everything else needs Key&nbsp;1</td>
+          <td><code>kimi-k3</code> needs Key&nbsp;2; <code>muse-spark</code> and <code>gpt-oss-120b</code> need Key&nbsp;1</td>
         </tr>
         <tr>
           <td>Slow responses</td>
           <td>Default lane is saturated</td>
-          <td>Switch to <code>ohack-free</code>, or take a walk — it's a hackathon</td>
+          <td>Switch to <code>gpt-oss-120b</code>, or take a walk — it's a hackathon</td>
         </tr>
         <tr>
           <td>Tool insists on a <code>claude-*</code> model</td>
           <td>Some tools filter model pickers</td>
-          <td>Type the model name <code>ohack</code> manually (env var or custom model entry)</td>
+          <td>Type the model name <code>muse-spark</code> manually (env var or custom model entry)</td>
         </tr>
       </tbody>
     </table>

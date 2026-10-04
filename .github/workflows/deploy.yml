@@ -1,0 +1,63 @@
+# Deploys the gateway to Fly.io on every push to main.
+#
+# Required repo secret: FLY_API_TOKEN
+#   Create one with:  fly tokens create deploy -a ohack-ai-gateway
+#   then add it at:   GitHub repo -> Settings -> Secrets and variables ->
+#   Actions -> New repository secret (name: FLY_API_TOKEN).
+# App secrets (API keys etc.) already live on the Fly app and are untouched
+# by this workflow.
+
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: fly-deploy
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate proxy config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pyyaml
+      - name: Check litellm-config.yaml parses and names are consistent
+        run: |
+          python3 - <<'EOF'
+          import sys, yaml
+          cfg = yaml.safe_load(open('config/litellm-config.yaml'))
+          groups = [m['model_name'] for m in cfg['model_list']]
+          aliases = cfg.get('router_settings', {}).get('model_group_alias', {}) or {}
+          fallbacks = cfg.get('router_settings', {}).get('fallbacks', []) or []
+          fb_names = set()
+          for entry in fallbacks:
+              for k, v in entry.items():
+                  fb_names.add(k); fb_names.update(v)
+          problems = []
+          for alias, target in aliases.items():
+              if target not in groups:
+                  problems.append(f"alias {alias!r} points at unknown group {target!r}")
+          for name in fb_names:
+              if name not in groups and name not in aliases:
+                  problems.append(f"fallback references unknown model {name!r}")
+          if problems:
+              print("\n".join(problems)); sys.exit(1)
+          print(f"OK: groups={sorted(set(groups))} aliases={aliases}")
+          EOF
+
+  deploy:
+    name: fly deploy
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
