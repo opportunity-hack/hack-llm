@@ -19,7 +19,8 @@ export GW="https://ai.ohack.dev"
    curl -s $GW/health/liveliness        # expect: "I'm alive!"
    curl -s $GW/health/readiness         # expect: JSON with "db":"connected"
    curl -s $GW/v1/models -H "Authorization: Bearer $MK" | python3 -m json.tool
-   # expect: ohack, ohack-frontier, ohack-free, ohack-mid
+   # expect: muse-spark, kimi-k3, gpt-oss-120b, kimi-k2.7-code
+   # (old ohack-* aliases also listed)
    ```
 2. **Both machines healthy?**
    ```bash
@@ -29,7 +30,7 @@ export GW="https://ai.ohack.dev"
    ```bash
    curl -s $GW/v1/chat/completions -H "Authorization: Bearer $MK" \
      -H 'Content-Type: application/json' \
-     -d '{"model":"ohack","messages":[{"role":"user","content":"say ok"}]}'
+     -d '{"model":"muse-spark","messages":[{"role":"user","content":"say ok"}]}'
    ```
 4. **Provider balances** (manual): Meta dashboard (dev.meta.ai) and Moonshot
    (platform.moonshot.ai) — confirm remaining credit and that the provider-side
@@ -41,13 +42,13 @@ export GW="https://ai.ohack.dev"
 Run `python scripts/check_spend.py --base-url $GW --master-key $MK`.
 
 - **Event total > $500** → announce in the event Slack: "Heads up teams — for
-  routine work please use model `ohack-free`; save `ohack`/`ohack-frontier` for
+  routine work please use model `gpt-oss-120b`; save `muse-spark`/`kimi-k3` for
   the hard stuff."
 - **Event total > $800** → disable the frontier lane globally:
   1. Edit `config/litellm-config.yaml`: comment out the entire
-     `ohack-frontier` block under `model_list`.
+     `kimi-k3` block under `model_list`.
   2. `fly deploy -a ohack-ai-gateway` (takes ~1 min; rolling, no downtime).
-  3. Announce: "`ohack-frontier` is closed for the rest of the event; `ohack`
+  3. Announce: "`kimi-k3` is closed for the rest of the event; `muse-spark`
      still works for everyone."
 
 ## Incident playbooks
@@ -124,8 +125,8 @@ the report is built from.
    Then `fly certs check ai.ohack.dev -a ohack-ai-gateway` until it says issued.
    Until DNS lands, everything works at `https://ohack-ai-gateway.fly.dev`.
 2. **Fund Moonshot** — the MOONSHOT_API_KEY secret is set (done 2026-08-17) but
-   the account is suspended for insufficient balance, so `ohack-mid` and
-   `ohack-frontier` fail. Recharge at platform.kimi.ai AND set the $600 hard
+   the account is suspended for insufficient balance, so `kimi-k2.7-code` and
+   `kimi-k3` fail. Recharge at platform.kimi.ai AND set the $600 hard
    spend limit there first (PLAN §3). Meta is set, funded, and verified working.
 3. **Free-tier keys** — GROQ_API_KEY / CEREBRAS_API_KEY are still placeholders:
    ```bash
@@ -147,7 +148,7 @@ the report is built from.
 - Budget-exhausted requests return HTTP 429 with `"type": "budget_exceeded"`
   and a human-readable message naming the key and amounts.
 - Muse Contributor lane is limited to 60 requests/min account-wide; under
-  burst, teams transparently fall back to `ohack-mid` (K2.7) — that's by design,
+  burst, teams transparently fall back to `kimi-k2.7-code` (K2.7) — that's by design,
   not an incident.
 - The LiteLLM admin UI is at `https://ai.ohack.dev/ui` (login = `UI_USERNAME` /
   `UI_PASSWORD` Fly secrets). Handy for eyeballing keys and spend graphs.

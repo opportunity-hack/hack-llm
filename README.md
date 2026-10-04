@@ -3,14 +3,16 @@
 One OpenAI-compatible (and Anthropic-compatible) endpoint every hackathon team
 points their coding tool at: **`https://ai.ohack.dev/v1`**.
 
-Teams use three virtual model names; the gateway (LiteLLM proxy on Fly.io)
-routes, falls back, meters cost, and enforces per-team budgets:
+Teams use four self-describing model names (old `ohack-*` names still work as
+aliases); the gateway (LiteLLM proxy on Fly.io) routes, falls back, meters
+cost, and enforces per-team budgets:
 
 | Model teams use | Routes to | Key / budget |
 |---|---|---|
-| `ohack` (default) | Muse Spark 1.2 Contributor → Kimi K2.7 Code → free tiers | Key 1 — $15/team |
-| `ohack-free` | stacked free tiers (Groq/Cerebras/NVIDIA) | Key 1 — $0 cost |
-| `ohack-frontier` | Kimi K3, no fallback (fails closed on budget) | Key 2 — $20/team |
+| `muse-spark` (default) | Muse Spark 1.3 Contributor → Kimi K2.7 Code → free tiers | Key 1 — $15/team |
+| `kimi-k2.7-code` | Kimi K2.7 Code → free tiers | Key 1 — $15/team |
+| `gpt-oss-120b` | stacked free tiers (Groq/Cerebras) | Key 1 — $0 cost |
+| `kimi-k3` | Kimi K3, no fallback (fails closed on budget) | Key 2 — $20/team |
 
 Each team gets two keys ($35 total) because per-key-per-model USD caps are
 enterprise-only in LiteLLM OSS — the dual-key pattern PLAN §Phase 3 pre-approved.

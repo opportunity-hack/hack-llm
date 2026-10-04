@@ -1,7 +1,9 @@
 # OHack Fall 2026 AI Gateway — LiteLLM routing config
 #
-# Teams see three model names: ohack, ohack-frontier, ohack-free.
-# (ohack-mid exists as the fallback hop; teams can call it but we don't advertise it.)
+# Teams see four self-describing model names (2026-10-04 rename; the old
+# ohack/ohack-mid/ohack-frontier/ohack-free names still work via
+# router_settings.model_group_alias below):
+#   muse-spark, kimi-k2.7-code, kimi-k3, gpt-oss-120b
 #
 # Pricing here is what budget math runs on — keep it matching the provider
 # price sheets (verified 2026-08-17, sources in DECISIONS.md). All costs are
@@ -14,7 +16,8 @@ model_list:
   # Contributor tier = Meta may train on prompts/completions (disclosed on the
   # team docs page) and is capped at 100 requests/min — the fallback chain below
   # absorbs event-scale bursts.
-  - model_name: ohack
+  # (was: ohack — renamed 2026-10-04, old name kept as alias)
+  - model_name: muse-spark
     litellm_params:
       model: openai/muse-spark-1.3-contributor
       api_base: https://api.meta.ai/v1
@@ -25,7 +28,8 @@ model_list:
       cache_read_input_token_cost: 2e-9  # $0.002 / M cached input
 
   # ── Lane 3 (mid fallback): Moonshot Kimi K2.7 Code — $0.95/$4 per M ──
-  - model_name: ohack-mid
+  # (was: ohack-mid — renamed 2026-10-04, old name kept as alias)
+  - model_name: kimi-k2.7-code
     litellm_params:
       model: openai/kimi-k2.7-code
       api_base: https://api.moonshot.ai/v1
@@ -38,7 +42,8 @@ model_list:
   # ── Lane 2 (frontier, per-team $20 cap enforced on the key): Kimi K3 ──
   # Deliberately NOT in any fallbacks list: when a team's frontier budget is
   # exhausted this fails closed with a budget_exceeded error, per PLAN §Phase 2.
-  - model_name: ohack-frontier
+  # (was: ohack-frontier — renamed 2026-10-04, old name kept as alias)
+  - model_name: kimi-k3
     litellm_params:
       model: openai/kimi-k3
       api_base: https://api.moonshot.ai/v1
@@ -49,12 +54,13 @@ model_list:
       cache_read_input_token_cost: 3e-7  # $0.30 / M cache hit
 
   # ── Lane 4 (overflow): stacked free tiers ──
+  # (was: ohack-free — renamed 2026-10-04, old name kept as alias)
   # Multiple entries under one model_name = load-balanced group.
   # GATE (PLAN §5): before the event, verify each provider's ToS permits
   # shared/pooled hackathon use; drop any that forbids it by deleting its block.
   # Model IDs below MUST be re-verified against each provider's /v1/models
   # during Phase 5 — free-tier catalogs churn.
-  - model_name: ohack-free
+  - model_name: gpt-oss-120b
     litellm_params:
       model: openai/openai/gpt-oss-120b   # groq model id is "openai/gpt-oss-120b"
       api_base: https://api.groq.com/openai/v1
@@ -65,7 +71,7 @@ model_list:
   # Cerebras: burst overflow only — free trial is $5/account and their ToS is
   # the strictest on credential sharing; key stays server-side in this gateway.
   # (zai-glm-4.7 was deprecated by Cerebras 2026-08-17 — audit 2026-09-10.)
-  - model_name: ohack-free
+  - model_name: gpt-oss-120b
     litellm_params:
       model: openai/gpt-oss-120b
       api_base: https://api.cerebras.ai/v1
@@ -74,7 +80,7 @@ model_list:
       input_cost_per_token: 0
       output_cost_per_token: 0
   # NVIDIA NIM overflow — uncomment once key exists and ToS is verified:
-  # - model_name: ohack-free
+  # - model_name: gpt-oss-120b
   #   litellm_params:
   #     model: openai/<pick from https://integrate.api.nvidia.com/v1/models>
   #     api_base: https://integrate.api.nvidia.com/v1
@@ -85,10 +91,17 @@ model_list:
 
 router_settings:
   num_retries: 2
-  # Fallback fires after retries on 429/5xx. ohack-frontier intentionally absent.
+  # Old ohack-* names keep working (2026-10-04 rename); aliases are shown on
+  # /v1/models by default.
+  model_group_alias:
+    "ohack": "muse-spark"
+    "ohack-mid": "kimi-k2.7-code"
+    "ohack-frontier": "kimi-k3"
+    "ohack-free": "gpt-oss-120b"
+  # Fallback fires after retries on 429/5xx. kimi-k3 intentionally absent.
   fallbacks:
-    - ohack: ["ohack-mid", "ohack-free"]
-    - ohack-mid: ["ohack-free"]
+    - muse-spark: ["kimi-k2.7-code", "gpt-oss-120b"]
+    - kimi-k2.7-code: ["gpt-oss-120b"]
 
 litellm_settings:
   telemetry: false          # PLAN §Phase 2: local-first, no telemetry upload
