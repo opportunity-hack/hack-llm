@@ -6,6 +6,13 @@ all hackathon teams' coding tools. PLAN.md is the spec; DECISIONS.md explains
 why LiteLLM replaced OmniRoute (its pre-approved fallback) and the dual-key
 budget design; runbook.md is event ops.
 
+## State (2026-10-04)
+
+- LiteLLM: stable v1.104.0; **GHSA-7hp6 (Critical, 2026-09-30, salt-reuse priv-esc)
+  affects pinned v1.97.0 — fix in 1.100.4**. Upgrade before Nov 1 freeze.
+- Team guide (`web/guide/index.html`) + key cards now label underlying models
+  (ohack=Muse Spark 1.3, frontier=Kimi K3, free=GPT-OSS pool); redeploy to ship.
+
 ## State (2026-08-17)
 
 - Deployed: Fly app `ohack-ai-gateway` + Postgres `ohack-ai-gateway-db`
