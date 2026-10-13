@@ -3,7 +3,7 @@
 One OpenAI-compatible (and Anthropic-compatible) endpoint every hackathon team
 points their coding tool at: **`https://ai.ohack.dev/v1`**.
 
-Teams use four self-describing model names (old `ohack-*` names still work as
+Teams use five self-describing model names (old `ohack-*` names still work as
 aliases); the gateway (LiteLLM proxy on Fly.io) routes, falls back, meters
 cost, and enforces per-team budgets:
 
@@ -12,7 +12,12 @@ cost, and enforces per-team budgets:
 | `muse-spark` (default) | Muse Spark 1.3 Contributor → Kimi K2.7 Code → free tiers | Key 1 — $15/team |
 | `kimi-k2.7-code` | Kimi K2.7 Code → free tiers | Key 1 — $15/team |
 | `gpt-oss-120b` | stacked free tiers (Groq/Cerebras) | Key 1 — $0 cost |
+| `muse-wonder` | Muse Wonder 1.0 (Meta, released 2026-10-12), no fallback (fails closed on budget) | Key 2 — $20/team |
 | `kimi-k3` | Kimi K3, no fallback (fails closed on budget) | Key 2 — $20/team |
+
+Muse Wonder Full, the larger sibling from the same Oct 12 launch, is not in
+the table on purpose: it has no Meta Model API (Muse Code subscription
+only), so the gateway cannot route to it. See DECISIONS.md D4.
 
 Each team gets two keys ($35 total) because per-key-per-model USD caps are
 enterprise-only in LiteLLM OSS — the dual-key pattern PLAN §Phase 3 pre-approved.

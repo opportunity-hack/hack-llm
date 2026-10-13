@@ -19,8 +19,9 @@ export GW="https://ai.ohack.dev"
    curl -s $GW/health/liveliness        # expect: "I'm alive!"
    curl -s $GW/health/readiness         # expect: JSON with "db":"connected"
    curl -s $GW/v1/models -H "Authorization: Bearer $MK" | python3 -m json.tool
-   # expect: muse-spark, kimi-k3, gpt-oss-120b, kimi-k2.7-code
-   # (old ohack-* aliases also listed)
+   # expect: muse-spark, muse-wonder, kimi-k3, gpt-oss-120b, kimi-k2.7-code
+   # (old ohack-* aliases also listed; muse-wonder-full is NOT expected -
+   #  it has no API, see DECISIONS.md D4)
    ```
 2. **Both machines healthy?**
    ```bash
@@ -32,6 +33,16 @@ export GW="https://ai.ohack.dev"
      -H 'Content-Type: application/json' \
      -d '{"model":"muse-spark","messages":[{"role":"user","content":"say ok"}]}'
    ```
+   Also smoke-test the frontier Meta lane once (it costs real frontier
+   money, so once is enough):
+   ```bash
+   curl -s $GW/v1/chat/completions -H "Authorization: Bearer $MK" \
+     -H 'Content-Type: application/json' \
+     -d '{"model":"muse-wonder","messages":[{"role":"user","content":"say ok"}]}'
+   # If this errors while muse-spark works, the Meta key is probably not
+   # entitled / billed for muse-wonder-1.0 yet - check dev.meta.ai billing
+   # (Wonder has no Contributor tier). Do not debug it as a LiteLLM bug first.
+   ```
 4. **Provider balances** (manual): Meta dashboard (dev.meta.ai) and Moonshot
    (platform.moonshot.ai) — confirm remaining credit and that the provider-side
    spend limits from PLAN §3 ($400 Meta / $600 Moonshot) are still set.
@@ -42,13 +53,13 @@ export GW="https://ai.ohack.dev"
 Run `python scripts/check_spend.py --base-url $GW --master-key $MK`.
 
 - **Event total > $500** → announce in the event Slack: "Heads up teams — for
-  routine work please use model `gpt-oss-120b`; save `muse-spark`/`kimi-k3` for
+  routine work please use model `gpt-oss-120b`; save `muse-spark`/`muse-wonder`/`kimi-k3` for
   the hard stuff."
 - **Event total > $800** → disable the frontier lane globally:
   1. Edit `config/litellm-config.yaml`: comment out the entire
-     `kimi-k3` block under `model_list`.
+     `muse-wonder` and `kimi-k3` blocks under `model_list`.
   2. `fly deploy -a ohack-ai-gateway` (takes ~1 min; rolling, no downtime).
-  3. Announce: "`kimi-k3` is closed for the rest of the event; `muse-spark`
+  3. Announce: "The frontier models (`muse-wonder` and `kimi-k3`) are closed for the rest of the event; `muse-spark`
      still works for everyone."
 
 ## Incident playbooks

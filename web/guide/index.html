@@ -296,7 +296,7 @@
     </div>
     <div class="fact-row">
       <span class="fact-label"><span class="keychip">Key 2</span></span>
-      <span class="fact-value">$20 budget · <span class="lane lane-frontier">kimi-k3</span> (Kimi K3)</span>
+      <span class="fact-value">$20 budget · <span class="lane lane-frontier">muse-wonder</span> (Muse Wonder) <span class="lane lane-frontier">kimi-k3</span> (Kimi K3)</span>
     </div>
   </div>
 
@@ -332,11 +332,18 @@
           <td>Stronger coding help; also the automatic fallback when muse-spark is down</td>
         </tr>
         <tr>
+          <td><code>muse-wonder</code></td>
+          <td>Muse Wonder (Meta, released Oct 12, 2026)</td>
+          <td>$4.00 in / $20.00 out</td>
+          <td>Key 2</td>
+          <td>Meta's new frontier model — long, hard agentic and coding jobs, 1M-token context. Frontier prices burn the $20 fast, so save it for the hard stuff</td>
+        </tr>
+        <tr>
           <td><code>kimi-k3</code></td>
           <td>Kimi K3 (Moonshot)</td>
           <td>$3.00 in / $15.00 out</td>
           <td>Key 2</td>
-          <td>The big gun — save it for hard problems</td>
+          <td>The other big gun — a cheaper frontier option for hard problems</td>
         </tr>
       </tbody>
     </table>
@@ -344,8 +351,18 @@
 
   <p>That's <strong>$35 per team total</strong>. When a budget runs out, requests return a clear
   <code>budget_exceeded</code> error — find an organizer. Examples below use Key&nbsp;1 with
-  <code>muse-spark</code>; to use <span class="lane lane-frontier">kimi-k3</span>, swap in Key&nbsp;2
-  <em>and</em> set the model name to <code>kimi-k3</code>.</p>
+  <code>muse-spark</code>; to use a frontier model (<span class="lane lane-frontier">muse-wonder</span> or
+  <span class="lane lane-frontier">kimi-k3</span>), swap in Key&nbsp;2
+  <em>and</em> set the model name to <code>muse-wonder</code> or <code>kimi-k3</code>.</p>
+
+  <div class="notice">
+    <strong>What about Muse Wonder Full?</strong>
+    Meta launched two Wonder models on Oct 12. Wonder Full is the larger one in
+    most of the launch benchmarks, but it is only available inside Muse Code
+    subscriptions — there is no API for it, so this gateway cannot offer it.
+    <code>muse-wonder</code> above is the real API model. If a tool asks for
+    <code>muse-wonder-full</code>, use <code>muse-wonder</code> instead.
+  </div>
 
   <nav class="chips" aria-label="Jump to your tool">
     <a href="#claude-code">Claude Code</a>
@@ -362,7 +379,7 @@
   Swap the model value to <code>gpt-oss-120b</code> to switch models with the same key:</p>
   <div class="codewrap">
 <pre>export ANTHROPIC_BASE_URL="https://ai.ohack.dev"
-export ANTHROPIC_AUTH_TOKEN=<redacted>
+export ANTHROPIC_AUTH_TOKEN="sk-YOUR-KEY-1"
 export ANTHROPIC_MODEL="muse-spark"
 export ANTHROPIC_SMALL_FAST_MODEL="muse-spark"
 export ANTHROPIC_DEFAULT_HAIKU_MODEL="muse-spark"
@@ -383,13 +400,13 @@ claude</pre>
     <button class="copy-btn" type="button">Copy</button>
   </div>
   <p>Frontier session instead: open a separate terminal and set all five vars for Key 2 — <code>ANTHROPIC_AUTH_TOKEN</code> to Key 2, and all three model vars to
-  <code>kimi-k3</code> (Key 2 only allows that model).</p>
+  <code>muse-wonder</code> or <code>kimi-k3</code> (Key 2 only allows those two models).</p>
 
   <h2 id="cursor"><span class="tool-tag">Editor</span>Cursor</h2>
   <ol>
     <li>Settings → Models → API Keys → <strong>OpenAI API Key</strong>: paste Key 1.</li>
     <li>Enable <strong>Override OpenAI Base URL</strong> and set it to <code>https://ai.ohack.dev/v1</code>.</li>
-    <li>Add a custom model named <code>muse-spark</code>. (For <code>kimi-k3</code>, switch the API key to Key 2 and add that model name.)</li>
+    <li>Add a custom model named <code>muse-spark</code>. (For <code>muse-wonder</code> or <code>kimi-k3</code>, switch the API key to Key 2 and add that model name.)</li>
   </ol>
 
   <h2 id="cline"><span class="tool-tag">VS Code</span>Cline</h2>
@@ -448,7 +465,7 @@ console.log(r.choices[0].message.content);</pre>
   PowerShell or some terminals. Windows: use <code>curl.exe</code> and escape the inner
   quotes as <code>\"</code>.</p>
   <div class="codewrap">
-<pre>curl -s https://ai.ohack.dev/v1/chat/completions -H "Authorization: Bearer <redacted>" -H "Content-Type: application/json" -d '{"model":"muse-spark","messages":[{"role":"user","content":"say ok"}]}'</pre>
+<pre>curl -s https://ai.ohack.dev/v1/chat/completions -H "Authorization: Bearer sk-YOUR-KEY-1" -H "Content-Type: application/json" -d '{"model":"muse-spark","messages":[{"role":"user","content":"say ok"}]}'</pre>
     <button class="copy-btn" type="button">Copy</button>
   </div>
 
@@ -457,7 +474,9 @@ console.log(r.choices[0].message.content);</pre>
     The default <code>muse-spark</code> model uses Meta's Contributor tier. Your prompts and
     generated code may be used by Meta to train its models. All OHack projects are open
     source, so this matches how your code will be published anyway. If your team objects,
-    use <code>gpt-oss-120b</code>.
+    use <code>gpt-oss-120b</code>. That Contributor disclosure is only about
+    <code>muse-spark</code>: <code>muse-wonder</code> has no Contributor tier and is billed
+    at Meta's standard rates.
   </div>
 
   <h2>Troubleshooting</h2>
@@ -480,7 +499,12 @@ console.log(r.choices[0].message.content);</pre>
         <tr>
           <td>"model not allowed"</td>
           <td>Wrong key for the model</td>
-          <td><code>kimi-k3</code> needs Key&nbsp;2; <code>muse-spark</code> and <code>gpt-oss-120b</code> need Key&nbsp;1</td>
+          <td><code>muse-wonder</code> and <code>kimi-k3</code> need Key&nbsp;2; <code>muse-spark</code> and <code>gpt-oss-120b</code> need Key&nbsp;1</td>
+        </tr>
+        <tr>
+          <td><code>muse-wonder-full</code> not found</td>
+          <td>Wonder Full has no API (Muse Code subscription only)</td>
+          <td>Use <code>muse-wonder</code> with Key&nbsp;2 instead</td>
         </tr>
         <tr>
           <td>Slow responses</td>
