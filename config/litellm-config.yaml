@@ -1,12 +1,13 @@
 # OHack Fall 2026 AI Gateway — LiteLLM routing config
 #
-# Teams see four self-describing model names (2026-10-04 rename; the old
+# Teams see five self-describing model names (2026-10-04 rename; the old
 # ohack/ohack-mid/ohack-frontier/ohack-free names still work via
 # router_settings.model_group_alias below):
-#   muse-spark, kimi-k2.7-code, kimi-k3, gpt-oss-120b
+#   muse-spark, muse-wonder, kimi-k2.7-code, kimi-k3, gpt-oss-120b
 #
 # Pricing here is what budget math runs on — keep it matching the provider
-# price sheets (verified 2026-08-17, sources in DECISIONS.md). All costs are
+# price sheets (verified 2026-08-17; muse-wonder verified 2026-10-13,
+# sources in DECISIONS.md D4). All costs are
 # USD per token (per-M price / 1,000,000).
 
 model_list:
@@ -38,6 +39,29 @@ model_list:
       input_cost_per_token: 9.5e-7  # $0.95 / M
       output_cost_per_token: 4e-6   # $4 / M
       cache_read_input_token_cost: 1.9e-7  # $0.19 / M cache hit
+
+  # ── Lane 2 (frontier, per-team $20 cap enforced on the key): Meta Muse
+  # Wonder — $4/$20 per M, $0.20/M cached input (added 2026-10-13, D4) ──
+  # Released 2026-10-12 via the Meta Model API as muse-wonder-1.0: same
+  # api.meta.ai base URL and META_MODEL_API_KEY as muse-spark, 1M-token
+  # context, built for long-horizon agentic/coding work. There is NO
+  # Contributor tier for Wonder (unlike muse-spark), so this is standard
+  # pricing — at frontier rates the $20 Key 2 cap is the real guardrail.
+  # Deliberately NOT in any fallbacks list: like kimi-k3, it fails closed
+  # with budget_exceeded when a team's frontier budget is exhausted.
+  # Muse Wonder Full (the larger sibling from the same launch) is NOT
+  # available on the Meta Model API — it is Muse Code subscription-only —
+  # so it deliberately has no entry here. Do not add a muse-wonder-full
+  # block expecting the API to serve it.
+  - model_name: muse-wonder
+    litellm_params:
+      model: openai/muse-wonder-1.0
+      api_base: https://api.meta.ai/v1
+      api_key: os.environ/META_MODEL_API_KEY
+    model_info:
+      input_cost_per_token: 4e-6    # $4 / M
+      output_cost_per_token: 2e-5   # $20 / M
+      cache_read_input_token_cost: 2e-7  # $0.20 / M cached input
 
   # ── Lane 2 (frontier, per-team $20 cap enforced on the key): Kimi K3 ──
   # Deliberately NOT in any fallbacks list: when a team's frontier budget is
@@ -98,7 +122,10 @@ router_settings:
     "ohack-mid": "kimi-k2.7-code"
     "ohack-frontier": "kimi-k3"
     "ohack-free": "gpt-oss-120b"
-  # Fallback fires after retries on 429/5xx. kimi-k3 intentionally absent.
+  # Fallback fires after retries on 429/5xx. The frontier models
+  # (kimi-k3 and muse-wonder) are intentionally absent. Note ohack-frontier
+  # still aliases to kimi-k3, not muse-wonder: remapping it would silently
+  # change the model (and price) for teams already using the old name.
   fallbacks:
     - muse-spark: ["kimi-k2.7-code", "gpt-oss-120b"]
     - kimi-k2.7-code: ["gpt-oss-120b"]

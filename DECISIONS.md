@@ -109,3 +109,52 @@ OmniRoute v3.8.50 still lacks lifetime per-key USD budgets. Changes applied:
   releases v2–v6); `keys/gateway-admin.env` is stale for admin creds. Team keys
   unaffected. Meta key live+funded; Moonshot key set but account unfunded;
   Groq/Cerebras still placeholders.
+
+## D4 — Muse Wonder added as a second frontier model (2026-10-13)
+
+Meta released the Muse Wonder family on 2026-10-12. Verified facts
+(Meta developer docs for the Meta Model API - models and pricing pages -
+cross-checked against launch coverage on 2026-10-13):
+
+| Model | Available via API? | API model ID | Price (per M tokens) |
+|---|---|---|---|
+| Muse Wonder | Yes - Meta Model API + Muse Code | `muse-wonder-1.0` | $4 in / $0.20 cached in / $20 out |
+| Muse Wonder Full | No - Muse Code subscription only (Power $50/mo, Maximum $200/mo) | none | n/a |
+
+- Wonder uses the same `https://api.meta.ai/v1` base URL and the same
+  `META_MODEL_API_KEY` as `muse-spark`, has a 1M-token context, and is
+  positioned for long-horizon agentic and coding work.
+- There is **no Contributor tier for Wonder** (that discount exists only for
+  Muse Spark). Wonder is standard-priced, so it does not belong on the
+  $15 Key 1 lane: at $4/$20 it would burn that budget roughly 40x/100x
+  faster than Spark Contributor on input/output.
+
+Decisions:
+
+- **Add `muse-wonder` on Key 2, alongside `kimi-k3`.** Key 2 stays $20/team
+  and the per-team total stays $35. Teams now choose between two frontier
+  models on the same key and budget: Wonder (Meta, 1M context) or Kimi K3
+  (cheaper per token at $3/$15).
+- **`muse-spark` stays the default.** Wonder is a premium tier, not a
+  Spark replacement. Spark Contributor remains the cheap default lane.
+- **No `muse-wonder-full` entry.** It has no API, so a config block for it
+  could only fail. The guide says this explicitly so teams do not go
+  looking for the model behind most of the launch-benchmark headlines.
+- **No fallback for `muse-wonder`, and no alias remap.** Like `kimi-k3`,
+  it fails closed on `budget_exceeded`. The existing `ohack-frontier`
+  alias still points at `kimi-k3` — remapping it would silently change
+  the model and price for anyone still using the old name.
+
+Still to verify after this merges (not established by this change):
+
+1. The live Meta key is entitled and billed for `muse-wonder-1.0`
+   (preview model, no Contributor tier — billing must be on). Smoke test
+   is in runbook.md, morning-of step 3.
+2. Existing Key 2 keys were provisioned with `models: [kimi-k3]` only.
+   LiteLLM checks the requested name against the key's allow-list, so
+   existing frontier keys must be updated (`/key/update`) to add
+   `muse-wonder`, or re-provisioned — the config change alone does not
+   grant them access. New keys from `scripts/provision_keys.py` already
+   include it.
+3. After `fly deploy`, confirm `/v1/models` lists `muse-wonder` and the
+   guide at `/ui/guide/` shows the new table.

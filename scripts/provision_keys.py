@@ -4,7 +4,7 @@
 TWO keys per team (the dual-key pattern PLAN §Phase 3 pre-approved, because
 per-key-per-model USD caps are an enterprise feature in LiteLLM OSS):
   - `team-NN`          max_budget $15, models: muse-spark, kimi-k2.7-code, gpt-oss-120b
-  - `team-NN-frontier` max_budget $20, models: kimi-k3 only
+  - `team-NN-frontier` max_budget $20, models: kimi-k3, muse-wonder
   = $35/team total, matching PLAN §3 exactly. Budgets are LIFETIME caps
   (budget_duration deliberately unset — they never reset).
 
@@ -13,6 +13,12 @@ and one uncapped `admin` key for organizers.
 
 Existing aliases are skipped (safe to re-run). Full keys are written ONLY to
 keys/keys.csv (gitignored); stdout shows prefixes.
+
+NOTE (2026-10-13): because existing aliases are skipped, re-running this
+after adding muse-wonder to FRONTIER_MODELS does NOT grant it to keys that
+were already provisioned. Update those live frontier keys' model lists
+with /key/update (see DECISIONS.md D4) or they will get "model not allowed"
+for muse-wonder.
 
 Usage:
     python scripts/provision_keys.py --base-url https://ai.ohack.dev --master-key sk-...
@@ -27,7 +33,7 @@ from pathlib import Path
 import requests
 
 MAIN_MODELS = ["muse-spark", "kimi-k2.7-code", "gpt-oss-120b"]
-FRONTIER_MODELS = ["kimi-k3"]
+FRONTIER_MODELS = ["kimi-k3", "muse-wonder"]
 ALL_MODELS = MAIN_MODELS + FRONTIER_MODELS
 
 

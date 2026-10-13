@@ -6,6 +6,16 @@ all hackathon teams' coding tools. PLAN.md is the spec; DECISIONS.md explains
 why LiteLLM replaced OmniRoute (its pre-approved fallback) and the dual-key
 budget design; runbook.md is event ops.
 
+## State (2026-10-13)
+
+- Muse Wonder (Meta, released 2026-10-12) added as a second Key 2 frontier
+  model (`muse-wonder` → `muse-wonder-1.0`, $4/$0.20 cached/$20 per M, no
+  Contributor tier, no fallback); `kimi-k3` kept, $35/team total unchanged.
+  Muse Wonder Full is Muse Code subscription-only with no API - do not add
+  it to the config. See DECISIONS.md D4. Still to verify post-merge: live
+  Meta key entitlement/billing for Wonder, `/key/update` on existing Key 2
+  keys to add `muse-wonder` to their allow-lists, and a live smoke test.
+
 ## State (2026-10-04)
 
 - LiteLLM: stable v1.104.0; **GHSA-7hp6 (Critical, 2026-09-30, salt-reuse priv-esc)
