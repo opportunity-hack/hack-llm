@@ -300,6 +300,15 @@
     </div>
   </div>
 
+  <div class="notice">
+    <strong>Accounts: what you need (it's free).</strong>
+    Everything is prepaid by Opportunity Hack, so you never need an Anthropic, Meta, or
+    Moonshot account, and never a credit card. Claude Code, Cline, Continue, the Python/Node
+    SDKs, and curl need <em>no account at all</em> — just paste your team key.
+    The Cursor editor asks for a free Cursor login to open the app, but with the setup below
+    it uses your team key, so none of your usage touches a Cursor plan or credits.
+  </div>
+
   <h2>Models</h2>
   <p>One key works with every model on its lane — switching models is just changing the
   model name, no new key needed. (The old names <code>ohack</code>, <code>ohack-mid</code>,
@@ -431,7 +440,8 @@ claude</pre>
 
   <h2 id="python"><span class="tool-tag">SDK</span>Python (OpenAI SDK)</h2>
   <div class="codewrap">
-<pre>from openai import OpenAI
+<pre># pip install openai
+from openai import OpenAI
 
 client = OpenAI(base_url="https://ai.ohack.dev/v1", api_key="sk-YOUR-KEY-1")
 r = client.chat.completions.create(
@@ -444,7 +454,8 @@ print(r.choices[0].message.content)</pre>
 
   <h2 id="node"><span class="tool-tag">SDK</span>Node (OpenAI SDK)</h2>
   <div class="codewrap">
-<pre>import OpenAI from "openai";
+<pre>// save as .mjs, or set "type": "module" in package.json
+import OpenAI from "openai";
 
 const client = new OpenAI({
   baseURL: "https://ai.ohack.dev/v1",
@@ -489,7 +500,7 @@ console.log(r.choices[0].message.content);</pre>
         <tr>
           <td><code>401</code></td>
           <td>Bad or missing key</td>
-          <td>Re-copy the key from your card; check for stray spaces</td>
+          <td>Make sure you replaced <code>sk-YOUR-KEY-1</code> with the real key from your team card (the placeholder won't work); check for stray spaces</td>
         </tr>
         <tr>
           <td><code>429</code> + <code>budget_exceeded</code></td>
@@ -497,9 +508,14 @@ console.log(r.choices[0].message.content);</pre>
           <td>Find an organizer</td>
         </tr>
         <tr>
+          <td><code>429</code> without <code>budget_exceeded</code></td>
+          <td>Too many requests at once on a shared team key</td>
+          <td>Wait a minute and retry</td>
+        </tr>
+        <tr>
           <td>"model not allowed"</td>
           <td>Wrong key for the model</td>
-          <td><code>muse-wonder</code> and <code>kimi-k3</code> need Key&nbsp;2; <code>muse-spark</code> and <code>gpt-oss-120b</code> need Key&nbsp;1</td>
+          <td><code>muse-wonder</code> and <code>kimi-k3</code> need Key&nbsp;2; <code>muse-spark</code>, <code>gpt-oss-120b</code>, and <code>kimi-k2.7-code</code> need Key&nbsp;1</td>
         </tr>
         <tr>
           <td><code>muse-wonder-full</code> not found</td>
@@ -518,6 +534,14 @@ console.log(r.choices[0].message.content);</pre>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="notice">
+    <strong>Keep this free for the next team.</strong>
+    Opportunity Hack is a 501(c)(3) nonprofit, and this gateway is a public good we pay for
+    ourselves: $35 of AI for every team, no strings attached. If you've got the means, chip in
+    what you can at <a href="https://givebutter.com/a5MSes">givebutter.com/a5MSes</a> so the
+    next hackathon's students get the same deal.
   </div>
 
   <footer>
