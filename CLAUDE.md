@@ -6,6 +6,42 @@ all hackathon teams' coding tools. PLAN.md is the spec; DECISIONS.md explains
 why LiteLLM replaced OmniRoute (its pre-approved fallback) and the dual-key
 budget design; runbook.md is event ops.
 
+## State (2026-11-08)
+
+- **Key expiry was a no-op everywhere.** LiteLLM `/key/generate` has no
+  `expires` field (silently dropped — `GenerateKeyRequest` v1.97.0); expiry
+  is `duration` ("<n>s|m|h|d") → `expires = now + duration`, same on
+  `/key/update`. `provision_keys.py` now sends `duration` (`--expires`,
+  default `2026-11-16T07:00:00Z`); new `scripts/set_key_expiry.py` sweeps
+  live `team-*`/`spare-*`/`mentors*`/`fall26-*` keys via `/key/update`
+  (dry-run default, `--yes` applies; run before doors — runbook). The
+  ohack.dev backend (`api/teams/gateway_keys.py`, backend PR #325) had the
+  same bug and now sends `duration` too.
+- **Groq + Cerebras secrets set** — `gpt-oss-120b` verified live from both
+  providers (`x-litellm-model-api-base` header). Overflow lane is real now.
+- **Claude Code + Kimi fix is now COMMITTED** (was deployed 2026-10-04 as
+  machine v10 straight from a laptop, never pushed — CI deploys `main` on
+  push, so the next merge would have reverted it): `litellm_settings:
+  use_chat_completions_url_for_anthropic_messages: true`. Re-verified Nov 8:
+  `/v1/messages` tool-call turns 200 on muse-spark, kimi-k2.7-code,
+  muse-wonder, kimi-k3.
+- **muse-spark reasoning gotcha (live probe):** hidden reasoning (~350–400
+  tokens on a tool turn) counts against `max_tokens`; ≤ ~600 → empty content
+  + `finish_reason: length`; 4000 → fine. Only `tool_choice: "auto"` works
+  (`required` → 400, and the kimi fallback rejects it the same way).
+  Documented in the guide, team-setup.md and runbook.
+- `kimi-k3` reports ~5x the input tokens of the prompt (Moonshot counts its
+  reasoning scaffold); budgets bill what Moonshot reports — expected.
+- Two key pools exist: the 63 card keys from `provision_keys.py` AND
+  backend-minted `fall26-<team_id>(-frontier)` keys on team approval (same
+  budgets, metadata `ohack_team_id`/`event`/`provisioned_by`/`key_label`).
+  A team with both holds $70, not $35 — pick one story before doors.
+- Carried over from Greg's Oct 4 laptop notes (never committed): PR #1 rename
+  deployed (machine v9), `ai.ohack.dev` DNS live, all 63 keys grant old+new
+  names (`/key/info` sweep), `keys/key_cards.pdf` reprinted with two-line key
+  labels (`make_key_cards.py` now matches), `keys/gateway-admin.env` refreshed
+  from Fly secrets. Master key is a weak non-`sk-` value — rotate before Nov 13.
+
 ## State (2026-10-13)
 
 - Muse Wonder (Meta, released 2026-10-12) added as a second Key 2 frontier
@@ -64,3 +100,5 @@ budget design; runbook.md is event ops.
   `fly deploy -a ohack-ai-gateway` (config ships via fly.toml `[[files]]`).
 - Scripts are Python 3.11+, stdlib + requests (+qrcode/reportlab for cards),
   all with `--dry-run`.
+- Key expiry goes through `duration`, never an `expires` field (LiteLLM drops
+  it). Any new key-minting code must send `duration`.

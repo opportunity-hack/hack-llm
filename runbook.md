@@ -106,6 +106,26 @@ fly scale count 2 -a ohack-ai-gateway   # Nov 13, before doors
 fly scale count 1 -a ohack-ai-gateway   # Nov 16, teardown
 ```
 
+## Before doors (Nov 13): make sure every key actually expires
+
+Keys minted before 2026-11-08 have **no expiry** (`expires: None`): the card
+provisioner never sent one and the ohack.dev backend sent an `expires` field
+that LiteLLM's `/key/generate` silently drops (it wants `duration`). Both are
+fixed going forward; existing keys need a one-time sweep:
+
+```bash
+python scripts/set_key_expiry.py --base-url $GW --master-key $MK          # audit (dry run)
+python scripts/set_key_expiry.py --base-url $GW --master-key $MK --yes    # apply
+# then spot-check one:
+curl -s "$GW/key/info?key=<team-key>" -H "Authorization: Bearer $MK" | python3 -m json.tool | grep expires
+# expect "2026-11-16T07:00:00+00:00" — midnight Arizona after the event
+```
+
+Covers `team-*`, `spare-*`, `mentors*` and the backend's `fall26-*` keys;
+the uncapped `admin` key is left alone unless you pass `--include-admin`.
+Teams are told (guide + cards) that keys stop at Sun Nov 16 12:00 AM AZ.
+`revoke_all.py` at teardown stays as belt-and-braces.
+
 ## Teardown (Nov 16)
 
 ORDER MATTERS: export the spend report FIRST — revoking hard-deletes the keys
@@ -139,12 +159,14 @@ the report is built from.
    the account is suspended for insufficient balance, so `kimi-k2.7-code` and
    `kimi-k3` fail. Recharge at platform.kimi.ai AND set the $600 hard
    spend limit there first (PLAN §3). Meta is set, funded, and verified working.
-3. **Free-tier keys** — GROQ_API_KEY / CEREBRAS_API_KEY are still placeholders:
+3. **Free-tier keys — DONE 2026-11-08.** GROQ_API_KEY / CEREBRAS_API_KEY are
+   set; `gpt-oss-120b` verified serving from BOTH `api.cerebras.ai` and
+   `api.groq.com` (check the `x-litellm-model-api-base` response header to
+   see which one answered). Keys stay server-side only — both providers' ToS
+   forbid credential sharing/transfer. To rotate:
    ```bash
    fly secrets set -a ohack-ai-gateway GROQ_API_KEY=... CEREBRAS_API_KEY=...
    ```
-   (triggers a rolling restart automatically). Keys stay server-side only —
-   both providers' ToS forbid credential sharing/transfer.
 4. **Master key** — rotated on 2026-08-17 (releases v2–v6) after provisioning;
    `keys/gateway-admin.env` on the provisioning laptop is STALE for the master
    key (and possibly UI login). The current values are whatever was set in that
@@ -158,9 +180,25 @@ the report is built from.
   (PLAN §3) are the real ceiling — never remove those.
 - Budget-exhausted requests return HTTP 429 with `"type": "budget_exceeded"`
   and a human-readable message naming the key and amounts.
-- Muse Contributor lane is limited to 60 requests/min account-wide; under
-  burst, teams transparently fall back to `kimi-k2.7-code` (K2.7) — that's by design,
-  not an incident.
+- Muse Contributor lane is limited to 100 requests/min account-wide (Meta
+  raised it from 60 — Sep 2026 audit); under burst, teams transparently fall
+  back to `kimi-k2.7-code` (K2.7) — that's by design, not an incident.
+- `muse-spark` reasons before answering and the hidden reasoning counts
+  against `max_tokens`: a tool-call turn with `max_tokens` ≤ ~600 returns
+  EMPTY content with `finish_reason: length`. Claude Code / Cursor / Cline send
+  large limits so they're fine; a student's hand-rolled script with
+  `max_tokens: 200` will look "broken" — point them at the guide note. It also
+  rejects `tool_choice: "required"` (only `"auto"`), and the kimi fallback does
+  too, so that error is not a routing incident.
+- Claude Code talks `/v1/messages`; the config's
+  `use_chat_completions_url_for_anthropic_messages: true` is what makes
+  Moonshot tool-call turns work there (LiteLLM otherwise bridges `openai/*`
+  through the Responses API, which Moonshot lacks). Don't remove it.
+- The ohack.dev backend ALSO mints keys (`fall26-<team_id>` / `-frontier`,
+  same budgets) when an organizer approves a team on the admin Teams page,
+  so a team may hold BOTH a printed card and dashboard keys — up to $70 of
+  exposure per team, not $35. `check_spend.py` lists both families; decide
+  before doors which one teams are told to use.
 - The LiteLLM admin UI is at `https://ai.ohack.dev/ui` (login = `UI_USERNAME` /
   `UI_PASSWORD` Fly secrets). Handy for eyeballing keys and spend graphs.
 - The team setup guide is served at `https://ai.ohack.dev/ui/guide` (no login —

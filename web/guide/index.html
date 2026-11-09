@@ -298,6 +298,10 @@
       <span class="fact-label"><span class="keychip">Key 2</span></span>
       <span class="fact-value">$20 budget · <span class="lane lane-frontier">muse-wonder</span> (Muse Wonder) <span class="lane lane-frontier">kimi-k3</span> (Kimi K3)</span>
     </div>
+    <div class="fact-row">
+      <span class="fact-label">Keys work until</span>
+      <span class="fact-value">Sun Nov 16, 12:00 AM Arizona time (07:00 UTC) — after that, requests return <code>401</code></span>
+    </div>
   </div>
 
   <div class="notice">
@@ -363,6 +367,18 @@
   <code>muse-spark</code>; to use a frontier model (<span class="lane lane-frontier">muse-wonder</span> or
   <span class="lane lane-frontier">kimi-k3</span>), swap in Key&nbsp;2
   <em>and</em> set the model name to <code>muse-wonder</code> or <code>kimi-k3</code>.</p>
+
+  <div class="notice">
+    <strong>Writing your own agent on <code>muse-spark</code>? Give it room to think.</strong>
+    <code>muse-spark</code> reasons before it answers, and that hidden reasoning counts against
+    <code>max_tokens</code> — a tool-call turn alone uses ~400 tokens. With a small
+    <code>max_tokens</code> (under ~600) you get an <em>empty</em> reply with
+    <code>finish_reason: "length"</code>, which looks like the gateway is broken. Send
+    <code>max_tokens</code> of 2000 or more (Claude Code, Cursor, Cline and Continue already do).
+    Also: <code>muse-spark</code> only supports <code>tool_choice: "auto"</code> —
+    <code>"required"</code> or a named tool returns a 400, so pick <code>kimi-k2.7-code</code>
+    (Key 1) or a Key 2 model if your framework forces a tool call.
+  </div>
 
   <div class="notice">
     <strong>What about Muse Wonder Full?</strong>
@@ -521,6 +537,21 @@ console.log(r.choices[0].message.content);</pre>
           <td><code>muse-wonder-full</code> not found</td>
           <td>Wonder Full has no API (Muse Code subscription only)</td>
           <td>Use <code>muse-wonder</code> with Key&nbsp;2 instead</td>
+        </tr>
+        <tr>
+          <td>Empty reply, <code>finish_reason: "length"</code></td>
+          <td><code>muse-spark</code> spent its whole <code>max_tokens</code> on hidden reasoning</td>
+          <td>Send <code>max_tokens</code> ≥ 2000 (a tool-call turn alone needs ~400 of headroom)</td>
+        </tr>
+        <tr>
+          <td><code>400</code> mentioning <code>tool_choice</code></td>
+          <td><code>muse-spark</code> only supports <code>tool_choice: "auto"</code></td>
+          <td>Drop <code>"required"</code>/named tool choice, or use <code>kimi-k2.7-code</code></td>
+        </tr>
+        <tr>
+          <td><code>401</code> on a key that worked all weekend</td>
+          <td>Keys expire Sun Nov 16, 12:00 AM Arizona time</td>
+          <td>That's the end of the event — thanks for hacking with us!</td>
         </tr>
         <tr>
           <td>Slow responses</td>

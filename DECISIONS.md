@@ -158,3 +158,27 @@ Still to verify after this merges (not established by this change):
    include it.
 3. After `fly deploy`, confirm `/v1/models` lists `muse-wonder` and the
    guide at `/ui/guide/` shows the new table.
+
+## D5 — Keys expire via `duration`; overflow lane funded; Claude Code flag committed (2026-11-08)
+
+Found while validating two backend-minted team keys against the live gateway:
+
+- `/key/info` returned `expires: None` for every key. LiteLLM v1.97.0's
+  `/key/generate` has **no `expires` field** — the ohack.dev backend sent one
+  and it was silently dropped; the card provisioner sent nothing. The only
+  supported knob is `duration` (`"<n>s|m|h|d"`), which LiteLLM turns into
+  `expires = now + duration` on both `/key/generate` and `/key/update`.
+  **Decision:** every key expires at `2026-11-16T07:00:00Z` (midnight
+  Arizona after the event). `provision_keys.py` sends `duration`; the new
+  `scripts/set_key_expiry.py` fixes live keys; the backend sends `duration`
+  (backend PR #325). `revoke_all.py` stays as the teardown backstop.
+- `gpt-oss-120b` failed "Wrong API Key" until Nov 8 — Groq/Cerebras secrets
+  were placeholders. Now set and verified from both providers.
+- The `use_chat_completions_url_for_anthropic_messages: true` fix that makes
+  Claude Code + Moonshot tool calls work had been deployed from a laptop on
+  Oct 4 but never committed; with CI deploying `main` on push, any merge
+  would have reverted it. It is in the committed config now.
+- `muse-spark` spends ~400 hidden reasoning tokens per tool turn and only
+  supports `tool_choice: "auto"`; documented for teams rather than worked
+  around (no prompt rewriting per PLAN §Phase 2).
+

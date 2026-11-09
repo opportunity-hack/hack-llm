@@ -31,10 +31,11 @@ also served by the gateway itself at **`https://ai.ohack.dev/ui/guide`**
 ## Layout
 
 ```
-fly.toml                  Fly.io app config (app: ohack-ai-gateway, region: phx)
+fly.toml                  Fly.io app config (app: ohack-ai-gateway, region: lax)
 config/litellm-config.yaml  Providers, lanes, fallbacks, pricing — the whole routing brain
 scripts/provision_keys.py Create the 63 team/spare/mentor/admin keys (2 per team) with budgets
 scripts/check_spend.py    Live per-team spend table, warns at 80% of quota
+scripts/set_key_expiry.py Set the Nov 16 expiry on keys that already exist (run before doors)
 scripts/revoke_all.py     Teardown: revoke every key
 scripts/make_key_cards.py Print-ready PDF key cards from keys/keys.csv
 scripts/load_test.py      25-session streaming load test (Phase 5)
