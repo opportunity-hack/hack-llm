@@ -24,6 +24,8 @@ with Claude Code, Cursor, Cline, Continue, and any OpenAI or Anthropic SDK.
   - `kimi-k3` — Kimi K3. The other big gun, cheaper per token ($3 / $15).
 - That's **$35 per team total**. When a budget is gone, requests return a clear
   `budget_exceeded` error — find an organizer.
+- **Keys work until Sun Nov 16, 12:00 AM Arizona time (07:00 UTC)**; after that
+  requests return `401`.
 
 Heard about **Muse Wonder Full**? It is the larger model from the same
 Oct 12 launch, but it is only in Muse Code subscriptions — there is no API
@@ -120,6 +122,17 @@ const r = await client.chat.completions.create({
 console.log(r.choices[0].message.content);
 ```
 
+## Writing your own agent on `muse-spark`? Give it room to think.
+
+`muse-spark` reasons before it answers, and that hidden reasoning counts
+against `max_tokens` — a tool-call turn alone uses ~400 tokens. With a small
+`max_tokens` (under ~600) you get an *empty* reply with
+`finish_reason: "length"`, which looks like the gateway is broken. Send
+`max_tokens` of 2000 or more (Claude Code, Cursor, Cline and Continue already
+do). Also: `muse-spark` only supports `tool_choice: "auto"` — `"required"` or
+a named tool returns a 400, so use `kimi-k2.7-code` (Key 1) or a Key 2 model
+if your framework forces a tool call.
+
 ## Data notice
 
 The default `muse-spark` model uses Meta's Contributor tier. Your prompts and
@@ -136,6 +149,9 @@ is billed at Meta's standard rates.
 | `429` with `budget_exceeded` | That key's budget is spent | Find an organizer |
 | "model not allowed" / access error | Wrong key for the model | `muse-wonder` and `kimi-k3` need Key 2; everything else needs Key 1 |
 | `muse-wonder-full` not found | Wonder Full has no API (Muse Code subscription only) | Use `muse-wonder` with Key 2 |
+| Empty reply, `finish_reason: "length"` | `muse-spark` spent its whole `max_tokens` on hidden reasoning | Send `max_tokens` ≥ 2000 (a tool-call turn needs ~400 of headroom) |
+| `400` mentioning `tool_choice` | `muse-spark` only supports `tool_choice: "auto"` | Drop `"required"`/named tool choice, or use `kimi-k2.7-code` |
+| `401` on a key that worked all weekend | Keys expire Sun Nov 16, 12:00 AM Arizona time | That's the end of the event — thanks for hacking with us! |
 | Slow responses | Default lane is saturated | Switch to `gpt-oss-120b`, or take a walk — it's a hackathon |
 | Tool insists on a `claude-*` model name | Some tools filter model pickers | Set the model name manually to `muse-spark` (env var or custom model entry) |
 

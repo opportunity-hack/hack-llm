@@ -32,13 +32,21 @@ def make_qr_image(data: str):
     return ImageReader(qr.make_image(fill_color="black", back_color="white").get_image())
 
 
-def draw_key_block(c, pad, top, label, key):
-    """Key as split text + QR to its right. Returns the y below the block."""
+def draw_key_block(c, pad, top, label, key, sub=None):
+    """Key as split text + QR to its right. Returns the y below the block.
+
+    `sub` is an optional one-line note (which models the key unlocks) drawn in
+    a smaller face under the bold label, so the label itself stays short.
+    """
     from reportlab.lib.units import inch
 
     qr_size = 0.95 * inch
     c.setFont("Helvetica-Bold", 9.5)
     c.drawString(pad, top, label)
+    if sub:
+        c.setFont("Helvetica", 7)
+        c.drawString(pad, top - 10, sub)
+        top -= 10
     c.setFont("Courier", 6.8)
     mid = (len(key) + 1) // 2
     c.drawString(pad, top - 13, key[:mid])
@@ -71,13 +79,22 @@ def draw_card(c, x, y, row):
 
     q_main = row.get("quota_main")
     q_front = row.get("quota_frontier")
-    main_label = (f"Key 1 — muse-spark (Muse Spark 1.3) / gpt-oss-120b (${q_main})"
-                  if q_main else "Key — all models (uncapped, organizers)")
-    next_y = draw_key_block(c, pad, CARD_H - pad - 62, main_label, row["key"])
+    # Model names here must match config/litellm-config.yaml model_name values
+    # (renamed 2026-10-04, muse-wonder added 2026-10-13) and web/guide/index.html.
+    # Two-line labels: bold budget line + small model list (the Oct 4 cards
+    # were reprinted this way — keys.csv has no model column, so renames
+    # never touch it).
+    if q_main:
+        main_label = f"Key 1 — ${q_main} budget"
+        main_sub = "muse-spark (Muse Spark 1.3) · kimi-k2.7-code · gpt-oss-120b (free)"
+    else:
+        main_label = "Key — all models (uncapped, organizers)"
+        main_sub = "muse-spark · kimi-k2.7-code · gpt-oss-120b · muse-wonder · kimi-k3"
+    next_y = draw_key_block(c, pad, CARD_H - pad - 62, main_label, row["key"], main_sub)
     if row.get("frontier_key"):
-        f_label = (f"Key 2 — muse-wonder / kimi-k3 (${q_front})"
-                   if q_front else "Key 2 — muse-wonder / kimi-k3")
-        next_y = draw_key_block(c, pad, next_y - 14, f_label, row["frontier_key"])
+        f_label = f"Key 2 — ${q_front} budget" if q_front else "Key 2 — frontier"
+        f_sub = "muse-wonder · kimi-k3 (frontier) — save them for the hard problems"
+        next_y = draw_key_block(c, pad, next_y - 14, f_label, row["frontier_key"], f_sub)
 
     qr_size = 0.85 * inch
     c.drawImage(make_qr_image(DOCS_URL), pad, 0.55 * inch, qr_size, qr_size)

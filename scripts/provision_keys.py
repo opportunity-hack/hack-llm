@@ -8,6 +8,12 @@ per-key-per-model USD caps are an enterprise feature in LiteLLM OSS):
   = $35/team total, matching PLAN §3 exactly. Budgets are LIFETIME caps
   (budget_duration deliberately unset — they never reset).
 
+Every key EXPIRES at --expires (default 2026-11-16T07:00:00Z = midnight
+Arizona after the event). LiteLLM has no `expires` field on /key/generate
+(it is silently dropped); expiry is set by sending `duration` ("<seconds>s"),
+which LiteLLM turns into expires = now + duration. Keys minted before
+2026-11-08 were created without it — fix them with scripts/set_key_expiry.py.
+
 Also: spare-01..05 (same shape), mentors ($30 + $20 frontier = $50 per PLAN §8),
 and one uncapped `admin` key for organizers.
 
@@ -28,6 +34,7 @@ Usage:
 import argparse
 import csv
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
@@ -35,6 +42,22 @@ import requests
 MAIN_MODELS = ["muse-spark", "kimi-k2.7-code", "gpt-oss-120b"]
 FRONTIER_MODELS = ["kimi-k3", "muse-wonder"]
 ALL_MODELS = MAIN_MODELS + FRONTIER_MODELS
+DEFAULT_EXPIRES = "2026-11-16T07:00:00Z"  # same instant the ohack.dev backend uses
+
+
+def duration_until(expires_iso: str, now: datetime | None = None) -> str:
+    """LiteLLM duration string ("<n>s") from now until `expires_iso` (UTC).
+
+    Raises if the instant has passed: a key minted then would be dead on
+    arrival, which is worse than a loud failure.
+    """
+    now = now or datetime.now(timezone.utc)
+    until = datetime.fromisoformat(expires_iso.replace("Z", "+00:00"))
+    seconds = int((until - now).total_seconds())
+    if seconds <= 0:
+        raise SystemExit(f"error: --expires {expires_iso} is in the past; "
+                         "pass a future instant or --no-expiry")
+    return f"{seconds}s"
 
 
 def key_specs(main: float, frontier: float, mentor_main: float):
@@ -77,15 +100,22 @@ def main() -> int:
     ap.add_argument("--frontier-budget", type=float, default=20.0)
     ap.add_argument("--mentor-budget", type=float, default=30.0)
     ap.add_argument("--out", default="keys/keys.csv")
+    ap.add_argument("--expires", default=DEFAULT_EXPIRES,
+                    help="UTC instant every key stops working (ISO 8601, default "
+                         f"{DEFAULT_EXPIRES}); sent to LiteLLM as `duration`")
+    ap.add_argument("--no-expiry", action="store_true",
+                    help="mint keys that never expire (not recommended)")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
+    duration = None if args.no_expiry else duration_until(args.expires)
     specs = key_specs(args.main_budget, args.frontier_budget, args.mentor_budget)
     if args.dry_run:
         for alias, budget, models in specs:
             print(f"would create {alias}: "
                   f"{'uncapped' if budget is None else f'${budget:g}'}"
-                  f" models={','.join(models)}")
+                  f" models={','.join(models)}"
+                  f" expires={'never' if duration is None else args.expires + ' (duration ' + duration + ')'}")
         print(f"Dry run: {len(specs)} keys, nothing created.")
         return 0
     if not args.master_key:
@@ -104,6 +134,8 @@ def main() -> int:
         body = {"key_alias": alias, "models": models}
         if budget is not None:
             body["max_budget"] = budget  # lifetime: budget_duration deliberately unset
+        if duration is not None:
+            body["duration"] = duration  # NOT `expires` — LiteLLM drops that field
         r = requests.post(f"{base_url}/key/generate", json=body, headers=headers, timeout=30)
         if r.status_code != 200:
             print(f"  {alias}: FAILED HTTP {r.status_code}: {r.text[:200]}", file=sys.stderr)

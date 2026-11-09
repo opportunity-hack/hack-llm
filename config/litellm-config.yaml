@@ -133,6 +133,13 @@ router_settings:
 litellm_settings:
   telemetry: false          # PLAN §Phase 2: local-first, no telemetry upload
   drop_params: true         # heterogeneous coding tools send provider-specific params; drop, don't 400
+  # Claude Code speaks /v1/messages. LiteLLM bridges openai/* deployments through
+  # the OpenAI *Responses* API by default; Moonshot has no real /v1/responses and
+  # 400s on the first tool-call turn (missing tool messages). Force chat/completions,
+  # which every backend here supports. Deployed 2026-10-04 (machine v10) and
+  # re-verified 2026-11-08 (tool-call turns via /v1/messages on all four paid
+  # models). CI deploys main on push — this line MUST stay in the committed config.
+  use_chat_completions_url_for_anthropic_messages: true
   # NO token compression / prompt rewriting anywhere (PLAN §Phase 2: correctness > cost)
 
 general_settings:
