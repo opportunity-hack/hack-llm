@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 keys/
+start_claude.sh   # local launcher holding a live gateway key
 *.key
 
 # Generated artifacts
