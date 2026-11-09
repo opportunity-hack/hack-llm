@@ -182,3 +182,48 @@ Found while validating two backend-minted team keys against the live gateway:
   supports `tool_choice: "auto"`; documented for teams rather than worked
   around (no prompt rewriting per PLAN §Phase 2).
 
+## D6 — Frontier lane moves to Kimi K3.1 Pro; reasoning_effort only where safe; overflow lane on native providers (2026-11-08)
+
+Verified facts (platform.kimi.ai thinking-models guide + Nov 2026 price sheet,
+dev.meta.ai reasoning docs, console.groq.com reasoning docs, live probes
+against ai.ohack.dev):
+
+| Model | `reasoning_effort` values | Default | Rejects |
+|---|---|---|---|
+| kimi-k3.1-pro / kimi-k3 | low, high, max (also tolerates none/minimal/medium/xhigh) | max | nothing |
+| kimi-k2.7-code | none — thinking always on | n/a | n/a |
+| muse-spark-1.3-contributor, muse-wonder-1.0 | minimal, low, medium, high, xhigh | model-chosen | `none` (400) |
+| gpt-oss-120b (Groq, Cerebras) | low, medium, high | medium | none, minimal, max, xhigh (400) |
+
+- Kimi K3.1 Pro (launched 2026-10-24) is $2 / $0.20 cached / $10 per M vs
+  Kimi K3 at $3 / $0.30 / $15, same 1M context and effort values.
+- LiteLLM v1.97.0 silently drops `reasoning_effort` for model IDs not in its
+  catalog when `drop_params: true` (probe: Meta returned 200 for `none`,
+  which it rejects when it actually arrives). The Anthropic adapter maps
+  `thinking.type: disabled` to `none` and `budget_tokens` to
+  minimal/low/medium/high, so a passthrough exposes every backend to values
+  Claude Code can legitimately send.
+- With `model: openai/openai/gpt-oss-120b` (Groq's id has its own `openai/`
+  prefix) the `/v1/messages` path mangled the model and both overflow
+  deployments 404'd; `/v1/chat/completions` was unaffected.
+
+Decisions:
+
+- **`kimi-k3` is now served by `openai/kimi-k3.1-pro`.** The public name
+  stays `kimi-k3`: it sits in every frontier key's allow-list (frontend-minted
+  keys included), and the alias `ohack-frontier` still resolves to it.
+- **Forward `reasoning_effort` only on `kimi-k3`** (`allowed_openai_params`
+  + `supports_reasoning`). Moonshot's default is `max`, the most expensive
+  setting, so teams gain a real cost lever and nothing can 400. Not enabled on
+  `muse-spark`/`muse-wonder` (Meta 400s on `none`; for `muse-spark` that
+  became a silent fallback to `kimi-k2.7-code` at ~20x the price) nor on
+  `gpt-oss-120b` (a fallback lane must accept whatever the primary carried).
+- **Overflow lane uses native `groq/` and `cerebras/` providers** with
+  `additional_drop_params: ["reasoning_effort"]`, so Claude Code can reach it
+  and any effort value is tolerated.
+- **Skip `muse-wonder` effort control and Muse Wonder as a default lane**
+  (unchanged from D4); `muse-wonder` keeps the same model-chosen reasoning.
+
+Same day, the card-key pool (50 `team-NN(-frontier)` + 10 `spare-NN(-frontier)`)
+was deleted: teams are minted from the frontend as `fall26-<team_id>(-frontier)`,
+which already carry `muse-wonder`. `mentors-frontier` still allows only kimi-k3.

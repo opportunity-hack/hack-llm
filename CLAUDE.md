@@ -42,6 +42,40 @@ budget design; runbook.md is event ops.
   labels (`make_key_cards.py` now matches), `keys/gateway-admin.env` refreshed
   from Fly secrets. Master key is a weak non-`sk-` value — rotate before Nov 13.
 
+- **Frontier lane `kimi-k3` now backed by kimi-k3.1-pro** (public name kept so key
+  allow-lists + printed cards stay valid): $2/$0.20cache/$10 vs k3 $3/$0.30/$15,
+  same 1M ctx + effort values. Guide row updated. Live since release v21 (DECISIONS D6).
+  K2 series (kimi-k2.7-code) closed to new accounts Oct 31, retires end Dec 2026.
+- **reasoning_effort passthrough ONLY on kimi-k3** (`allowed_openai_params` +
+  `model_info.supports_reasoning`); LiteLLM otherwise drops it (drop_params + IDs not
+  in its catalog — verified: Meta accepted "none" with 200 before the change).
+  Moonshot takes any value, default "max" (costliest). NOT enabled on muse-spark /
+  muse-wonder (Meta 400s on "none" = Anthropic `thinking:disabled`; for muse-spark that
+  meant a silent fallback to kimi-k2.7-code at ~20x price) nor gpt-oss-120b (Groq/
+  Cerebras 400 on none/minimal/max/xhigh → would break the overflow lane). Claude Code
+  `thinking.budget_tokens` → minimal(<1024)/low/medium/high(>=4096); `output_config.effort`
+  with adaptive. Effort support: muse-spark/wonder minimal..xhigh (no off), kimi-k3
+  low|high|max, gpt-oss low|medium|high, kimi-k2.7-code none (thinking always on).
+- **gpt-oss-120b was unreachable from Claude Code**: with `openai/openai/gpt-oss-120b`
+  the `/v1/messages` path mangled the id and BOTH deployments 404'd (chat/completions
+  fine). Now native `groq/openai/gpt-oss-120b` + `cerebras/gpt-oss-120b` with
+  `additional_drop_params: [reasoning_effort]`; 200 on both paths, all thinking modes.
+- **Incident 2026-11-08:** releases v17–v20 were deployed from a STALE local main
+  (pre-PR #2–#4) → muse-wonder + Greg's guide/config changes were off prod ~25 min.
+  Fixed at v21 (ff to origin/main + re-applied). Always `git fetch && git status -sb`
+  before `fly deploy`. Greg's uncommitted `make_key_cards.py` diff was superseded by
+  PR #4's version and dropped.
+- **Card-key pool RETIRED 2026-11-08**: all 50 `team-NN(-frontier)` and 10
+  `spare-NN(-frontier)` keys deleted (Greg: teams are minted from the frontend now as
+  `fall26-<team_id>(-frontier)`; spend on the deleted keys was ~$0.79 total, all
+  organizer tests). Remaining 6 keys: admin, mentors, mentors-frontier, 3 fall26.
+  `keys/keys.csv` + `keys/key_cards.pdf` are entirely dead — don't hand out cards;
+  `provision_keys.py`/`make_key_cards.py`/`revoke_all.py` are legacy. `start_claude.sh`
+  pointed at `spare-05` (deleted) — needs a fall26 or new key. Oct 13 "add muse-wonder
+  to existing Key 2 allow-lists" TODO is moot (fall26 frontier keys mint with it);
+  `mentors-frontier` still allows only kimi-k3 + ohack-frontier.
+- muse-wonder-1.0 pricing $4/$20 reconfirmed 2026-11-08; `/health` = 6 deployments OK.
+
 ## State (2026-10-13)
 
 - Muse Wonder (Meta, released 2026-10-12) added as a second Key 2 frontier

@@ -9,6 +9,15 @@
 # price sheets (verified 2026-08-17; muse-wonder verified 2026-10-13,
 # sources in DECISIONS.md D4). All costs are
 # USD per token (per-M price / 1,000,000).
+#
+# reasoning_effort: LiteLLM drops params it thinks a model doesn't support
+# (drop_params: true + these IDs aren't in its catalog). Only kimi-k3 opts in via
+# `allowed_openai_params` (2026-11-08): Moonshot accepts any value incl. none/
+# minimal/medium/xhigh, and its default "max" is the costly case. NOT enabled on
+# muse-spark / muse-wonder (Meta 400s on "none" = Claude thinking:disabled -> for
+# muse-spark a silent fallback to kimi-k2.7-code at ~20x price) or gpt-oss-120b
+# (Groq/Cerebras 400 on none/minimal/max/xhigh, would break the overflow lane).
+# kimi-k2.7-code has thinking always-on and no knob.
 
 model_list:
   # ── Lane 1 (default): Meta Muse Spark 1.3 Contributor — $0.10/$0.20 per M ──
@@ -63,19 +72,25 @@ model_list:
       output_cost_per_token: 2e-5   # $20 / M
       cache_read_input_token_cost: 2e-7  # $0.20 / M cached input
 
-  # ── Lane 2 (frontier, per-team $20 cap enforced on the key): Kimi K3 ──
+  # ── Lane 2 (frontier, per-team $20 cap enforced on the key): Kimi K3.1 Pro ──
   # Deliberately NOT in any fallbacks list: when a team's frontier budget is
   # exhausted this fails closed with a budget_exceeded error, per PLAN §Phase 2.
   # (was: ohack-frontier — renamed 2026-10-04, old name kept as alias)
+  # 2026-11-08: public name kept as `kimi-k3` (printed on key cards + in every
+  # key's model allow-list) but now backed by kimi-k3.1-pro — newer and cheaper
+  # ($2/$0.20/$10 vs $3/$0.30/$15). Same 1M ctx, same effort values low|high|max.
   - model_name: kimi-k3
     litellm_params:
-      model: openai/kimi-k3
+      model: openai/kimi-k3.1-pro
       api_base: https://api.moonshot.ai/v1
       api_key: os.environ/MOONSHOT_API_KEY
+      # Forward client reasoning_effort (Moonshot default is "max" = most $$).
+      allowed_openai_params: ["reasoning_effort"]
     model_info:
-      input_cost_per_token: 3e-6    # $3 / M
-      output_cost_per_token: 1.5e-5 # $15 / M
-      cache_read_input_token_cost: 3e-7  # $0.30 / M cache hit
+      supports_reasoning: true
+      input_cost_per_token: 2e-6    # $2 / M
+      output_cost_per_token: 1e-5   # $10 / M
+      cache_read_input_token_cost: 2e-7  # $0.20 / M cache hit
 
   # ── Lane 4 (overflow): stacked free tiers ──
   # (was: ohack-free — renamed 2026-10-04, old name kept as alias)
@@ -84,11 +99,17 @@ model_list:
   # shared/pooled hackathon use; drop any that forbids it by deleting its block.
   # Model IDs below MUST be re-verified against each provider's /v1/models
   # during Phase 5 — free-tier catalogs churn.
+  # 2026-11-08: native `groq/` + `cerebras/` providers. With `openai/openai/gpt-oss-120b`
+  # the Anthropic /v1/messages path mangled the id and BOTH deployments 404'd
+  # ("model gpt-oss-120b does not exist"), so Claude Code users could never reach
+  # this lane; /v1/chat/completions was fine. Native providers strip exactly once.
+  # reasoning_effort is force-dropped here: Groq/Cerebras 400 on none/minimal/max/
+  # xhigh, and a fallback lane must accept whatever the primary request carried.
   - model_name: gpt-oss-120b
     litellm_params:
-      model: openai/openai/gpt-oss-120b   # groq model id is "openai/gpt-oss-120b"
-      api_base: https://api.groq.com/openai/v1
+      model: groq/openai/gpt-oss-120b     # groq model id is "openai/gpt-oss-120b"
       api_key: os.environ/GROQ_API_KEY
+      additional_drop_params: ["reasoning_effort"]
     model_info:
       input_cost_per_token: 0
       output_cost_per_token: 0
@@ -97,9 +118,9 @@ model_list:
   # (zai-glm-4.7 was deprecated by Cerebras 2026-08-17 — audit 2026-09-10.)
   - model_name: gpt-oss-120b
     litellm_params:
-      model: openai/gpt-oss-120b
-      api_base: https://api.cerebras.ai/v1
+      model: cerebras/gpt-oss-120b
       api_key: os.environ/CEREBRAS_API_KEY
+      additional_drop_params: ["reasoning_effort"]
     model_info:
       input_cost_per_token: 0
       output_cost_per_token: 0
