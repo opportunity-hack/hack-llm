@@ -12,7 +12,7 @@ budget design; runbook.md is event ops.
   `expires` field (silently dropped — `GenerateKeyRequest` v1.97.0); expiry
   is `duration` ("<n>s|m|h|d") → `expires = now + duration`, same on
   `/key/update`. `provision_keys.py` now sends `duration` (`--expires`,
-  default `2026-11-16T07:00:00Z`); new `scripts/set_key_expiry.py` sweeps
+  default `2026-11-16T01:00:00Z` = Sun Nov 15 6 PM AZ, moved from 07:00Z on Nov 10); new `scripts/set_key_expiry.py` sweeps
   live `team-*`/`spare-*`/`mentors*`/`fall26-*` keys via `/key/update`
   (dry-run default, `--yes` applies; run before doors — runbook). The
   ohack.dev backend (`api/teams/gateway_keys.py`, backend PR #325) had the

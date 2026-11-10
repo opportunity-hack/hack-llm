@@ -21,10 +21,10 @@ with Claude Code, Cursor, Cline, Continue, and any OpenAI or Anthropic SDK.
   - `muse-wonder` — Muse Wonder (Meta, released Oct 12, 2026). The new big
     gun for long, hard agentic and coding jobs; 1M-token context, frontier
     prices ($4 in / $20 out per M), so spend it deliberately.
-  - `kimi-k3` — Kimi K3. The other big gun, cheaper per token ($3 / $15).
+  - `kimi-k3` — Kimi K3.1 Pro. The other big gun, cheaper per token ($2 / $10).
 - That's **$35 per team total**. When a budget is gone, requests return a clear
   `budget_exceeded` error — find an organizer.
-- **Keys work until Sun Nov 16, 12:00 AM Arizona time (07:00 UTC)**; after that
+- **Keys work until Sun Nov 15, 6:00 PM Arizona time (01:00 UTC Mon)**; after that
   requests return `401`.
 
 Heard about **Muse Wonder Full**? It is the larger model from the same
@@ -151,7 +151,7 @@ is billed at Meta's standard rates.
 | `muse-wonder-full` not found | Wonder Full has no API (Muse Code subscription only) | Use `muse-wonder` with Key 2 |
 | Empty reply, `finish_reason: "length"` | `muse-spark` spent its whole `max_tokens` on hidden reasoning | Send `max_tokens` ≥ 2000 (a tool-call turn needs ~400 of headroom) |
 | `400` mentioning `tool_choice` | `muse-spark` only supports `tool_choice: "auto"` | Drop `"required"`/named tool choice, or use `kimi-k2.7-code` |
-| `401` on a key that worked all weekend | Keys expire Sun Nov 16, 12:00 AM Arizona time | That's the end of the event — thanks for hacking with us! |
+| `401` on a key that worked all weekend | Keys expire Sun Nov 15, 6:00 PM Arizona time | That's the end of the event — thanks for hacking with us! |
 | Slow responses | Default lane is saturated | Switch to `gpt-oss-120b`, or take a walk — it's a hackathon |
 | Tool insists on a `claude-*` model name | Some tools filter model pickers | Set the model name manually to `muse-spark` (env var or custom model entry) |
 

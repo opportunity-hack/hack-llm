@@ -118,12 +118,15 @@ python scripts/set_key_expiry.py --base-url $GW --master-key $MK          # audi
 python scripts/set_key_expiry.py --base-url $GW --master-key $MK --yes    # apply
 # then spot-check one:
 curl -s "$GW/key/info?key=<team-key>" -H "Authorization: Bearer $MK" | python3 -m json.tool | grep expires
-# expect "2026-11-16T07:00:00+00:00" — midnight Arizona after the event
+# expect "2026-11-16T01:00:00+00:00" — Sun Nov 15, 6:00 PM Arizona
 ```
 
 Covers `team-*`, `spare-*`, `mentors*` and the backend's `fall26-*` keys;
 the uncapped `admin` key is left alone unless you pass `--include-admin`.
-Teams are told (guide + cards) that keys stop at Sun Nov 16 12:00 AM AZ.
+Teams are told (guide + ohack.dev team dashboard) that keys stop at Sun Nov 15, 6:00 PM AZ.
+The expiry moved earlier on Nov 10 2026 (was 07:00Z = midnight at the end of Sunday):
+re-run the sweep after the backend deploy so keys minted before then move too —
+`set_key_expiry.py` also moves a LATER expiry back to the target.
 `revoke_all.py` at teardown stays as belt-and-braces.
 
 ## Teardown (Nov 16)

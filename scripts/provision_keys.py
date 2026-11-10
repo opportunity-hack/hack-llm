@@ -8,8 +8,8 @@ per-key-per-model USD caps are an enterprise feature in LiteLLM OSS):
   = $35/team total, matching PLAN §3 exactly. Budgets are LIFETIME caps
   (budget_duration deliberately unset — they never reset).
 
-Every key EXPIRES at --expires (default 2026-11-16T07:00:00Z = midnight
-Arizona after the event). LiteLLM has no `expires` field on /key/generate
+Every key EXPIRES at --expires (default 2026-11-16T01:00:00Z = Sun Nov 15,
+6:00 PM Arizona, right after the awards). LiteLLM has no `expires` field on /key/generate
 (it is silently dropped); expiry is set by sending `duration` ("<seconds>s"),
 which LiteLLM turns into expires = now + duration. Keys minted before
 2026-11-08 were created without it — fix them with scripts/set_key_expiry.py.
@@ -42,7 +42,7 @@ import requests
 MAIN_MODELS = ["muse-spark", "kimi-k2.7-code", "gpt-oss-120b"]
 FRONTIER_MODELS = ["kimi-k3", "muse-wonder"]
 ALL_MODELS = MAIN_MODELS + FRONTIER_MODELS
-DEFAULT_EXPIRES = "2026-11-16T07:00:00Z"  # same instant the ohack.dev backend uses
+DEFAULT_EXPIRES = "2026-11-16T01:00:00Z"  # Sun Nov 15 6 PM AZ; same instant the ohack.dev backend uses
 
 
 def duration_until(expires_iso: str, now: datetime | None = None) -> str:

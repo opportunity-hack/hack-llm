@@ -169,7 +169,8 @@ Found while validating two backend-minted team keys against the live gateway:
   supported knob is `duration` (`"<n>s|m|h|d"`), which LiteLLM turns into
   `expires = now + duration` on both `/key/generate` and `/key/update`.
   **Decision:** every key expires at `2026-11-16T07:00:00Z` (midnight
-  Arizona after the event). `provision_keys.py` sends `duration`; the new
+  Arizona after the event) — **superseded Nov 10 2026: `2026-11-16T01:00:00Z`
+  = Sun Nov 15, 6:00 PM Arizona, right after the awards** (Greg). `provision_keys.py` sends `duration`; the new
   `scripts/set_key_expiry.py` fixes live keys; the backend sends `duration`
   (backend PR #325). `revoke_all.py` stays as the teardown backstop.
 - `gpt-oss-120b` failed "Wrong API Key" until Nov 8 — Groq/Cerebras secrets
