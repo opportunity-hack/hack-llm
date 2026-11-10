@@ -13,7 +13,7 @@ cost, and enforces per-team budgets:
 | `kimi-k2.7-code` | Kimi K2.7 Code → free tiers | Key 1 — $15/team |
 | `gpt-oss-120b` | stacked free tiers (Groq/Cerebras) | Key 1 — $0 cost |
 | `muse-wonder` | Muse Wonder 1.0 (Meta, released 2026-10-12), no fallback (fails closed on budget) | Key 2 — $20/team |
-| `kimi-k3` | Kimi K3, no fallback (fails closed on budget) | Key 2 — $20/team |
+| `kimi-k3` | Kimi K3.1 Pro, no fallback (fails closed on budget) | Key 2 — $20/team |
 
 Muse Wonder Full, the larger sibling from the same Oct 12 launch, is not in
 the table on purpose: it has no Meta Model API (Muse Code subscription
@@ -35,7 +35,7 @@ fly.toml                  Fly.io app config (app: ohack-ai-gateway, region: lax)
 config/litellm-config.yaml  Providers, lanes, fallbacks, pricing — the whole routing brain
 scripts/provision_keys.py Create the 63 team/spare/mentor/admin keys (2 per team) with budgets
 scripts/check_spend.py    Live per-team spend table, warns at 80% of quota
-scripts/set_key_expiry.py Set the Nov 16 expiry on keys that already exist (run before doors)
+scripts/set_key_expiry.py Set the Sun Nov 15 6 PM AZ expiry on keys that already exist (run before doors)
 scripts/revoke_all.py     Teardown: revoke every key
 scripts/make_key_cards.py Print-ready PDF key cards from keys/keys.csv
 scripts/load_test.py      25-session streaming load test (Phase 5)

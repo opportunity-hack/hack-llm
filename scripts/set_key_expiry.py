@@ -19,7 +19,7 @@ target is left alone. Dry-run by default; --yes applies. Prints key prefixes onl
 Usage:
     python scripts/set_key_expiry.py --base-url https://ai.ohack.dev --master-key sk-...            # audit
     python scripts/set_key_expiry.py --base-url https://ai.ohack.dev --master-key sk-... --yes      # apply
-    python scripts/set_key_expiry.py ... --expires 2026-11-16T07:00:00Z --include-admin --yes
+    python scripts/set_key_expiry.py ... --expires 2026-11-16T01:00:00Z --include-admin --yes
 """
 
 import argparse
@@ -29,7 +29,7 @@ from datetime import datetime, timezone
 
 import requests
 
-DEFAULT_EXPIRES = "2026-11-16T07:00:00Z"  # midnight Arizona after the event; same as the backend
+DEFAULT_EXPIRES = "2026-11-16T01:00:00Z"  # Sun Nov 15, 6 PM Arizona; same as the backend
 CARD_ALIAS_RE = re.compile(r"^(team-\d{2}|spare-\d{2}|mentors)(-frontier)?$")
 BACKEND_ALIAS_RE = re.compile(r"^fall26-.+$")
 
