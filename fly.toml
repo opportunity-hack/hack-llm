@@ -21,6 +21,12 @@ kill_timeout = 30 # let the in-flight spend batch flush (~10s cadence) before st
   guest_path = '/app/proxy_config.yaml'
   local_path = 'config/litellm-config.yaml'
 
+# Callback module referenced by litellm_settings.callbacks — LiteLLM imports it
+# from the config file's directory, so it must sit beside proxy_config.yaml.
+[[files]]
+  guest_path = '/app/strip_reasoning_replay.py'
+  local_path = 'config/strip_reasoning_replay.py'
+
 # Team setup guide, served by LiteLLM's own static mount at /ui/guide.
 # The guest path is inside the pinned v1.97.0 image's dashboard export —
 # re-verify it (python3.13, .venv layout) if the image pin ever changes.

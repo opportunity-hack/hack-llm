@@ -6,6 +6,24 @@ all hackathon teams' coding tools. PLAN.md is the spec; DECISIONS.md explains
 why LiteLLM replaced OmniRoute (its pre-approved fallback) and the dual-key
 budget design; runbook.md is event ops.
 
+## State (2026-11-11)
+
+- **gpt-oss-120b broke every Claude Code session on turn 2** (and any muse-spark /
+  kimi-k2.7-code session that fell back to it): Claude Code replays earlier
+  `thinking` blocks, the /v1/messages bridge sends them as `thinking_blocks` /
+  `reasoning_content` on assistant turns, and BOTH Groq and Cerebras 400
+  ("property 'messages.N.assistant.thinking_blocks' is unsupported"). The Nov 8
+  "200 on all thinking modes" check was single-turn, so it never replayed one.
+  Fix: `config/strip_reasoning_replay.py`, a `CustomLogger.async_pre_call_deployment_hook`
+  (runs after the deployment is picked, incl. fallbacks) that drops only those two
+  fields for groq/cerebras; wired via `litellm_settings.callbacks` and shipped to
+  `/app/` by a fly.toml `[[files]]` entry (LiteLLM imports callbacks from the
+  config file's directory). `additional_drop_params` can't do it — in v1.97.0 it
+  only drops params, never message fields. Verified on a local v1.97.0 proxy
+  against a strict fake provider (exact prod error before, 200 after, stream +
+  non-stream + muse-spark→gpt-oss fallback). Local proxy needs `fastapi<0.118`
+  (newer fastapi removed `get_flat_dependant`). Re-test live with a 2-turn replay.
+
 ## State (2026-11-08)
 
 - **Key expiry was a no-op everywhere.** LiteLLM `/key/generate` has no
