@@ -424,6 +424,12 @@ claude</pre>
 }</pre>
     <button class="copy-btn" type="button">Copy</button>
   </div>
+  <p>Using <code>gpt-oss-120b</code> in Claude Code? Also add
+  <code>export CLAUDE_CODE_AUTO_COMPACT_WINDOW="100000"</code> (or
+  <code>"CLAUDE_CODE_AUTO_COMPACT_WINDOW": "100000"</code> in <code>settings.json</code>).
+  That model holds 131k tokens, but Claude Code expects 200k and waits too long to
+  summarize, so long sessions stop with “Please reduce the length of the messages”.
+  This tells Claude Code to summarize earlier. Already stuck? Run <code>/compact</code>.</p>
   <p>Frontier session instead: open a separate terminal and set all five vars for Key 2 — <code>ANTHROPIC_AUTH_TOKEN</code> to Key 2, and all three model vars to
   <code>muse-wonder</code> or <code>kimi-k3</code> (Key 2 only allows those two models).</p>
 
@@ -557,6 +563,11 @@ console.log(r.choices[0].message.content);</pre>
           <td>Slow responses</td>
           <td>Default lane is saturated</td>
           <td>Switch to <code>gpt-oss-120b</code>, or take a walk — it's a hackathon</td>
+        </tr>
+        <tr>
+          <td>“Please reduce the length of the messages” on <code>gpt-oss-120b</code></td>
+          <td>The chat outgrew the model's 131k-token memory</td>
+          <td>Run <code>/compact</code> (Claude Code) or start a new chat; set <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW="100000"</code> so it doesn't happen again (<a href="#claude-code">Claude Code</a>)</td>
         </tr>
         <tr>
           <td>Tool insists on a <code>claude-*</code> model</td>

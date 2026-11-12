@@ -24,6 +24,15 @@ budget design; runbook.md is event ops.
   non-stream + muse-spark→gpt-oss fallback). Local proxy needs `fastapi<0.118`
   (newer fastapi removed `get_flat_dependant`). Re-test live with a 2-turn replay.
 
+- **gpt-oss-120b's 131k window vs Claude Code's 200k assumption**: long Claude Code
+  sessions hit Cerebras/Groq "reduce the length of the messages" (input + reply >
+  131k) before Claude Code auto-compacts. Client-side fix, documented in the guide
+  (`#claude-code` + troubleshooting row) and the team dashboard snippets (FE
+  `gatewaySnippets.js` `CLAUDE_COMPACT_WINDOW`): `CLAUDE_CODE_AUTO_COMPACT_WINDOW=100000`
+  (Claude Code's minimum) for gpt-oss-120b. No `context_window_fallbacks` on purpose:
+  the only larger-window lanes are paid. A muse-spark session that grows past 131k
+  and then falls back to gpt-oss can still hit it.
+
 ## State (2026-11-08)
 
 - **Key expiry was a no-op everywhere.** LiteLLM `/key/generate` has no
